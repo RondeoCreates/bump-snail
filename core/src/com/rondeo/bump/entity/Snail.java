@@ -1,6 +1,7 @@
 package com.rondeo.bump.entity;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -8,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -24,6 +24,7 @@ public class Snail extends Actor implements Entity {
     Vector2 lastPosition = new Vector2();
     Vector2 targetPoint = new Vector2();
     int power = 1;
+    public int manaConsumption = 0;
     float deltaTime;
     boolean flip;
     boolean log;
@@ -33,24 +34,30 @@ public class Snail extends Actor implements Entity {
     Animation<TextureRegion> walkAnimation;
 
     Label label;
-
+    public String referenceName;
     float width, height;
 
-    public Snail( World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin ) {
+    public Snail( World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin, int manaConsumption ) {
         this.world = world;
         this.flip = flip;
         this.log = log;
         this.power = power;
+        this.manaConsumption = manaConsumption;
         this.width = width;
         this.height = height;
 
         setBounds( x, y, width, height );
-        body = createBody( x, y, width, height );
+        
         targetPoint.set( flip ? -5*power : 5*power, 0 );
 
         walkAnimation = new Animation<TextureRegion>( 0.14f, animation );
         walkAnimation.setPlayMode( PlayMode.LOOP );
         label = new Label( String.valueOf( power ), skin );
+    }
+
+    public void pack() {
+        if( body == null )
+            body = createBody( getX(), getY(), getWidth(), getHeight() );
     }
 
     public Body createBody( float cx, float cy, float hw, float hh ) {
@@ -70,7 +77,7 @@ public class Snail extends Actor implements Entity {
         fixtureDef.friction = 1f;
         fixtureDef.restitution = 0;
 
-        Fixture fixture = body.createFixture( fixtureDef );
+        body.createFixture( fixtureDef );
 
         box.dispose();
 
@@ -122,17 +129,24 @@ public class Snail extends Actor implements Entity {
     }
 
     final int scale = 5;
+    Color originalColor = new Color();
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        if( flip ) {
+            originalColor.set( batch.getColor() );
+            batch.setColor( batch.getColor().add( .5f, -.5f, -.5f, 0 ) );
+        }
         batch.draw( 
             walkAnimation.getKeyFrame( deltaTime ), 
             flip ? getX() + getWidth() + ( 10 + scale*power) : getX() - ( 10 + scale*power), 
             getY(), 
             flip ? - getWidth() - ( 20 + scale*power) : getWidth() + ( 20 + scale*power), 
             getHeight() + ( 20 + scale*power) );
-        
-        label.draw( batch, parentAlpha );
+        if( flip ) {
+            batch.setColor( originalColor );
+        }
+        //label.draw( batch, parentAlpha );
 
         super.draw( batch, parentAlpha );
     }

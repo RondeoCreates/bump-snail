@@ -20,6 +20,9 @@ Color: {
 	color: {
 		hex: 6bd3bdff
 	}
+	purple: {
+		hex: ce21d4ff
+	}
 	selection: {
 		hex: c5c5c5ff
 	}
@@ -47,6 +50,18 @@ TintedDrawable: {
 	label-pp-black: {
 		name: label-pp
 		color: black
+	}
+	purple-tint: {
+		name: white-pixel
+		color: purple
+		minWidth: 1
+		minHeight: 12
+	}
+	black-tint: {
+		name: white-pixel
+		color: black
+		minWidth: 1
+		minHeight: 16
 	}
 }
 ImageTextButtonStyle: {
