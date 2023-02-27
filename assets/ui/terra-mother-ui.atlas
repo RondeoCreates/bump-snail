@@ -29,7 +29,7 @@ cents
   index: -1
 cursor
   rotate: false
-  xy: 276, 54
+  xy: 58, 5
   size: 8, 19
   split: 0, 7, 0, 17
   pad: 0, 0, 0, 0
@@ -38,7 +38,7 @@ cursor
   index: -1
 cursor2
   rotate: false
-  xy: 58, 10
+  xy: 253, 35
   size: 18, 14
   split: 0, 17, 0, 3
   pad: 0, 0, 0, 0
@@ -47,7 +47,7 @@ cursor2
   index: -1
 digit-box
   rotate: false
-  xy: 266, 175
+  xy: 489, 290
   size: 13, 26
   orig: 13, 26
   offset: 0, 0
@@ -99,7 +99,7 @@ label-hp
   index: -1
 label-pp
   rotate: false
-  xy: 253, 55
+  xy: 253, 51
   size: 21, 18
   orig: 21, 18
   offset: 0, 0
@@ -121,28 +121,28 @@ new-select
   index: -1
 pc-1
   rotate: false
-  xy: 455, 273
+  xy: 253, 116
   size: 29, 43
   orig: 29, 43
   offset: 0, 0
   index: -1
 pc-2
   rotate: false
-  xy: 486, 274
+  xy: 284, 118
   size: 24, 42
   orig: 24, 42
   offset: 0, 0
   index: -1
 pc-3
   rotate: false
-  xy: 253, 116
+  xy: 253, 71
   size: 27, 43
   orig: 27, 43
   offset: 0, 0
   index: -1
 pc-4
   rotate: false
-  xy: 253, 75
+  xy: 266, 162
   size: 27, 39
   orig: 27, 39
   offset: 0, 0
@@ -164,14 +164,14 @@ saturn-export
   index: -1
 selector
   rotate: false
-  xy: 266, 161
+  xy: 265, 21
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
   index: -1
 selector-off
   rotate: false
-  xy: 274, 161
+  xy: 68, 12
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
@@ -234,5 +234,14 @@ window-player
   split: 17, 18, 18, 18
   pad: 12, 12, 12, 12
   orig: 85, 103
+  offset: 0, 0
+  index: -1
+select-overlay
+  rotate: false
+  xy: 455, 284
+  size: 32, 32
+  split: 15, 15, 15, 15
+  pad: 0, 33, 0, 33
+  orig: 32, 32
   offset: 0, 0
   index: -1

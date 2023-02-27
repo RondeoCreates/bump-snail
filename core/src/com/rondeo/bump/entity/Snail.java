@@ -1,7 +1,6 @@
 package com.rondeo.bump.entity;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -129,26 +128,16 @@ public class Snail extends Actor implements Entity {
     }
 
     final int scale = 5;
-    Color originalColor = new Color();
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        if( flip ) {
-            originalColor.set( batch.getColor() );
-            batch.setColor( batch.getColor().add( .5f, -.5f, -.5f, 0 ) );
-        }
         batch.draw( 
             walkAnimation.getKeyFrame( deltaTime ), 
             flip ? getX() + getWidth() + ( 10 + scale*power) : getX() - ( 10 + scale*power), 
             getY(), 
             flip ? - getWidth() - ( 20 + scale*power) : getWidth() + ( 20 + scale*power), 
             getHeight() + ( 20 + scale*power) );
-        if( flip ) {
-            batch.setColor( originalColor );
-        }
         //label.draw( batch, parentAlpha );
-
-        super.draw( batch, parentAlpha );
     }
 
     public Snail convertToSnail( Object userData ) {

@@ -10,10 +10,6 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -50,8 +46,7 @@ public class GameScreen extends ScreenAdapter {
     InputMultiplexer inputMultiplexer;
 
     Texture snailTexture;
-    TiledMap tiledMap;
-    TiledMapRenderer tiledMapRenderer;
+    Texture terrainTexture;
 
     public GameScreen() {
         snailTexture = new Texture( Gdx.files.internal( "snail.png" ) );
@@ -65,8 +60,10 @@ public class GameScreen extends ScreenAdapter {
         stage = new Stage( new ExtendViewport( vWidth, vHeight, camera = new OrthographicCamera( vWidth, vHeight ) ) );
 
         // TileMap
-        tiledMap = new TmxMapLoader().load( "terrain.tmx" );
-        tiledMapRenderer = new OrthogonalTiledMapRenderer( tiledMap );
+        terrainTexture = new Texture( Gdx.files.internal( "terrain.png" ) );
+        Image terrain = new Image( new TextureRegion( terrainTexture ) );
+        terrain.setBounds( -400, -300, 1800, 1100 );
+        stage.addActor( terrain );
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -190,11 +187,11 @@ public class GameScreen extends ScreenAdapter {
         );
 
         stage.addListener( new InputListener() {
-            float touchY;
+            float touchX, touchY;
             Snail snail;
             Image indicator;
             {
-                indicator = new Image( skin.getDrawable( "new-select" ) );
+                indicator = new Image( skin.getDrawable( "select-overlay" ) );
                 indicator.setVisible( false );
                 stage.addActor( indicator );
                 indicator.setSize( 100, 100 );
@@ -205,7 +202,7 @@ public class GameScreen extends ScreenAdapter {
                 // Show indicator
                 if( x > 0 && x < vWidth && y > 0 && y < vHeight ) {
                     indicator.setVisible( true );
-                    indicator.setPosition( x < vWidth/2 ? 0 : vWidth - 100, (y - y%100) );
+                    indicator.setPosition( x - x%100, y - y%100 );
                     return true;
                 } else {
                     indicator.setVisible( false );
@@ -216,7 +213,7 @@ public class GameScreen extends ScreenAdapter {
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 if( x > 0 && x < vWidth && y > 0 && y < vHeight ) {
                     indicator.setVisible( true );
-                    indicator.setPosition( x < vWidth/2 ? 0 : vWidth - 100, (y - y%100) );
+                    indicator.setPosition( x - x%100, y - y%100 );
                 } else {
                     indicator.setVisible( false );
                 }
@@ -232,11 +229,15 @@ public class GameScreen extends ScreenAdapter {
                 touchY = Math.max( 0, touchY );
                 touchY = Math.min( vHeight - 1, touchY );
                 touchY = (touchY - touchY%100) + 50;
+                touchX = x;
+                touchX = Math.max( 0, touchX );
+                touchX = Math.min( vWidth - 1, touchX );
+                touchX = ( touchX - touchX%100 ) + 50;
                 if( x > vWidth/2 ) {
                     if( readyB == null )
                         return;
                     snail = readyB;
-                    snail.setY( touchY );
+                    snail.setPosition( touchX, touchY );
                     snail.pack();
                     stage.addActor( snail );
                     manaB -= snail.manaConsumption;
@@ -251,7 +252,7 @@ public class GameScreen extends ScreenAdapter {
                     if( readyA == null )
                         return;
                     snail = readyA;
-                    snail.setY( touchY );
+                    snail.setPosition( touchX, touchY );
                     snail.pack();
                     stage.addActor( snail );
                     manaA -= snail.manaConsumption;
@@ -328,9 +329,6 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-
-        tiledMapRenderer.setView( camera );
-        tiledMapRenderer.render();
         
         stage.act( delta );
         stage.draw();
@@ -356,6 +354,7 @@ public class GameScreen extends ScreenAdapter {
         skin.dispose();
         
         snailTexture.dispose();
+        terrainTexture.dispose();
         cardTexture.dispose();
         manaTexture.dispose();
         timer.cancel();
