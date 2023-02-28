@@ -1,0 +1,55 @@
+
+assets.png
+size: 2048, 128
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+snailv1
+  rotate: false
+  xy: 1494, 80
+  size: 288, 24
+  orig: 288, 24
+  offset: 0, 0
+  index: -1
+snailv2
+  rotate: false
+  xy: 1204, 80
+  size: 288, 24
+  orig: 288, 24
+  offset: 0, 0
+  index: -1
+snailv3
+  rotate: false
+  xy: 1204, 28
+  size: 288, 24
+  orig: 288, 24
+  offset: 0, 0
+  index: -1
+snailv4
+  rotate: false
+  xy: 1204, 54
+  size: 288, 24
+  orig: 288, 24
+  offset: 0, 0
+  index: -1
+snailv5
+  rotate: false
+  xy: 1494, 54
+  size: 288, 24
+  orig: 288, 24
+  offset: 0, 0
+  index: -1
+spellP
+  rotate: false
+  xy: 2, 54
+  size: 1200, 50
+  orig: 1200, 50
+  offset: 0, 0
+  index: -1
+spellR
+  rotate: false
+  xy: 2, 2
+  size: 1200, 50
+  orig: 1200, 50
+  offset: 0, 0
+  index: -1

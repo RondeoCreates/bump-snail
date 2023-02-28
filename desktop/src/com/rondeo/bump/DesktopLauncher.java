@@ -9,7 +9,7 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setWindowSizeLimits( 1000, 500, 9999, 9999 );
-		config.setTitle("Bump snail");
+		config.setTitle("Bump Snail");
 		new Lwjgl3Application(new BumpSnail(), config);
 	}
 }

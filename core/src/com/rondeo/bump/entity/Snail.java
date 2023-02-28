@@ -12,18 +12,16 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
-public class Snail extends Actor implements Entity {
+public class Snail extends Entity {
     World world;
     Body body;
 
     Vector2 lastPosition = new Vector2();
     Vector2 targetPoint = new Vector2();
     int power = 1;
-    public int manaConsumption = 0;
     float deltaTime;
     boolean flip;
     boolean log;
@@ -54,12 +52,13 @@ public class Snail extends Actor implements Entity {
         label = new Label( String.valueOf( power ), skin );
     }
 
+    @Override
     public void pack() {
         if( body == null )
             body = createBody( getX(), getY(), getWidth(), getHeight() );
     }
 
-    public Body createBody( float cx, float cy, float hw, float hh ) {
+    private Body createBody( float cx, float cy, float hw, float hh ) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyType.DynamicBody;
         bodyDef.position.set( cx, cy );
@@ -138,10 +137,6 @@ public class Snail extends Actor implements Entity {
             flip ? - getWidth() - ( 20 + scale*power) : getWidth() + ( 20 + scale*power), 
             getHeight() + ( 20 + scale*power) );
         //label.draw( batch, parentAlpha );
-    }
-
-    public Snail convertToSnail( Object userData ) {
-        return (Snail) userData;
     }
 
 }
