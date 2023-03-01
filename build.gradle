@@ -9,8 +9,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.2'
-        
-
     }
 }
 
@@ -26,7 +24,6 @@ allprojects {
         ashleyVersion = '1.7.4'
         aiVersion = '1.8.2'
         gdxControllersVersion = '2.2.1'
-        gdxFireappVersion = '3.3.1'
     }
 
     repositories {
@@ -51,6 +48,7 @@ project(":desktop") {
 
         // box2d
         implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
     }
 }
 
@@ -73,9 +71,6 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64"
-
-        // firebase
-        implementation "pl.mk5.gdx-fireapp:gdx-fireapp-android:$gdxFireappVersion"
     }
 }
 
@@ -87,6 +82,6 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         // api "com.github.tommyettinger:jbump:1.0.1"
         implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        implementation "pl.mk5.gdx-fireapp:gdx-fireapp-core:$gdxFireappVersion"
+        implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
     }
 }

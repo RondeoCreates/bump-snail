@@ -1,5 +1,6 @@
 package com.rondeo.bump;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,9 +41,10 @@ import com.rondeo.bump.components.Cards;
 import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
-import com.rondeo.bump.util.FirebaseController;
+import com.rondeo.bump.util.DatabaseController;
+import com.rondeo.bump.util.Network.Position;
 
-public class MultiplayerScreen extends FirebaseController {
+public class MultiplayerScreen extends DatabaseController {
     World world;
     Box2DDebugRenderer debugRenderer;
 
@@ -55,7 +57,8 @@ public class MultiplayerScreen extends FirebaseController {
     TextureAtlas assets;
     Texture terrainTexture;
 
-    public MultiplayerScreen() {
+    public MultiplayerScreen() throws IOException {
+
         assets = new TextureAtlas( Gdx.files.internal( "assets.atlas" ) );
         cardTexture = new Texture( Gdx.files.internal( "cards.png" ) );
 
@@ -188,10 +191,22 @@ public class MultiplayerScreen extends FirebaseController {
 
     Cards cards;
     Entity readyA, readyB;
+    Position readyPosition;
     String refStringA, refStringB;
     Random random = new Random();
     Cell<Actor> tempCellA, tempCellB;
     int manaA = 10, manaB = 10;
+
+    @Override
+    public void placeOpponent( float x, float y, int index ) {
+        if( cards.getType( index ) == Cards.SNAIL )
+            readyB = new Snail( world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+        else
+            readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+        readyB.setPosition( vWidth - x, y );
+        readyB.pack();
+        stage.addActor( readyB );
+    }
 
     public void init() {
 
@@ -284,6 +299,10 @@ public class MultiplayerScreen extends FirebaseController {
                 refStringA = null;
                 addCardA();
 
+                // Send position to oponent
+                readyPosition.x = touchX;
+                readyPosition.y = touchY;
+                client.sendTCP( readyPosition );
             };
 
         } );
@@ -304,10 +323,13 @@ public class MultiplayerScreen extends FirebaseController {
                 cardImage.addAction( Actions.moveBy( 0, 15, .15f ) );
                 refStringA = cardImage.getName();
                 
-                if( cards.getType( index ) == Cards.SNAIL )
+                if( cards.getType( index ) == Cards.SNAIL ) {
                     readyA = new Snail( world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
-                else
+                    readyPosition = new Position( opponentId, 25, 0, index );
+                } else {
                     readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
+                    readyPosition = new Position( opponentId, 0, 0, index );
+                }
             };
         } );
         if( tempCellA != null ) {

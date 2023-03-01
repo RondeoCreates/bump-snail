@@ -1,6 +1,9 @@
 package com.rondeo.bump;
 
+import java.io.IOException;
+
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class BumpSnail extends Game {
@@ -11,7 +14,12 @@ public class BumpSnail extends Game {
 		// setScreen( new GameScreen() );
 
 		// Multiplayer
-		setScreen( new MultiplayerScreen() );
+		try {
+			setScreen( new MultiplayerScreen() );
+		} catch ( IOException e) {
+			e.printStackTrace();
+			Gdx.app.exit();
+		}
 	}
 
 	@Override
