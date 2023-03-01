@@ -20,7 +20,7 @@ public class KryoServer {
 	public KryoServer () throws IOException {
         server = new Server();
         server.start();
-        server.bind( 54555 );
+        server.bind( 80, 80 );
 
         kryo = server.getKryo();
         Network.register( kryo );

@@ -18,7 +18,8 @@ public abstract class DatabaseController extends ScreenAdapter implements DBInte
         client = new Client();
         client.start();
         //client.discoverHost( 54777, 5000 );
-        client.connect( 5000, "localhost", 54555 );
+        //client.connect( 5000, "bump-snail-server.rosenietalibo.repl.co", 54555 );
+        client.connect( 5000, client.discoverHost( 80, 5000 ), 80, 80 );
 
         kryo = client.getKryo();
         Network.register( kryo );
