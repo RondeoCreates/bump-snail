@@ -7,7 +7,11 @@ public class BumpSnail extends Game {
 	
 	@Override
 	public void create () {
-		setScreen( new GameScreen() );
+		// Debug: Local 2 players
+		// setScreen( new GameScreen() );
+
+		// Multiplayer
+		setScreen( new MultiplayerScreen() );
 	}
 
 	@Override

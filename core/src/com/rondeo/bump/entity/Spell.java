@@ -16,14 +16,13 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.Null;
 
 public class Spell extends Entity {
     World world;
     Body body;
-    int power;
-    boolean flip;
-    boolean target;
+    public int power;
+    public boolean flip;
+    public boolean target;
     boolean isDead;
 
     Animation<TextureRegion> spellAnimation;
@@ -70,6 +69,7 @@ public class Spell extends Entity {
         fixtureDef.isSensor = true;
 
         body.createFixture( fixtureDef );
+        body.setUserData( this );
 
         box.dispose();
 

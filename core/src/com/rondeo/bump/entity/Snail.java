@@ -21,12 +21,13 @@ public class Snail extends Entity {
 
     Vector2 lastPosition = new Vector2();
     Vector2 targetPoint = new Vector2();
-    int power = 1;
-    float deltaTime;
-    boolean flip;
+    public int power = 1;
+    public int health = 5;
+    public boolean flip;
     boolean log;
     boolean animate = true;
     boolean isDead;
+    float deltaTime;
 
     Animation<TextureRegion> walkAnimation;
 
@@ -42,6 +43,8 @@ public class Snail extends Entity {
         this.manaConsumption = manaConsumption;
         this.width = width;
         this.height = height;
+
+        health += power;
 
         setBounds( x, y, width, height );
         
@@ -76,10 +79,15 @@ public class Snail extends Entity {
         fixtureDef.restitution = 0;
 
         body.createFixture( fixtureDef );
+        body.setUserData( this );
 
         box.dispose();
 
         return body;
+    }
+
+    public void changeStat() {
+        targetPoint.set( flip ? -5*Math.max( 0, power) : 5*Math.max( 0, power), 0 );
     }
 
     @Override
@@ -114,7 +122,7 @@ public class Snail extends Entity {
         super.act( delta );
 
         // remove snail if out of bounds
-        if( ( body.getPosition().x < 0 || body.getPosition().x > 1000 ) && !isDead ) {
+        if( ( body.getPosition().x < -100 || body.getPosition().x > 1000 + 100 ) && !isDead ) {
             isDead = true;
             Gdx.app.postRunnable( new Runnable() {
                 @Override

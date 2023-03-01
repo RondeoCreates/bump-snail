@@ -6,7 +6,6 @@ import java.util.TimerTask;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -41,8 +40,9 @@ import com.rondeo.bump.components.Cards;
 import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
+import com.rondeo.bump.util.FirebaseController;
 
-public class GameScreen extends ScreenAdapter {
+public class MultiplayerScreen extends FirebaseController {
     World world;
     Box2DDebugRenderer debugRenderer;
 
@@ -55,7 +55,7 @@ public class GameScreen extends ScreenAdapter {
     TextureAtlas assets;
     Texture terrainTexture;
 
-    public GameScreen() {
+    public MultiplayerScreen() {
         assets = new TextureAtlas( Gdx.files.internal( "assets.atlas" ) );
         cardTexture = new Texture( Gdx.files.internal( "cards.png" ) );
 
@@ -109,10 +109,10 @@ public class GameScreen extends ScreenAdapter {
     
     // HUD
     Stage hud;
-    Table table, cardSlotA, cardSlotB;
+    Table table, cardSlotA;
     Texture cardTexture, manaTexture;
-    TextButton manaLabelA, manaLabelB;
-    ProgressBar manaProgressA, manaProgressB;
+    TextButton manaLabelA;
+    ProgressBar manaProgressA;
     Timer timer;
 
     @Override
@@ -140,13 +140,6 @@ public class GameScreen extends ScreenAdapter {
         cardSlotA.pad( 5 );
         table.add( cardSlotA );
 
-        table.add().expandX();
-
-        cardSlotB = new Table( skin );
-        cardSlotB.setBackground( new NinePatchDrawable( skin.getPatch( "flat-slot" ) ) );
-        cardSlotB.pad( 5 );
-        table.add( cardSlotB );
-
         init();
 
         inputMultiplexer = new InputMultiplexer( stage, hud );
@@ -165,11 +158,6 @@ public class GameScreen extends ScreenAdapter {
                     manaLabelA.setText( String.valueOf( manaA ) );
                     manaProgressA.setValue( manaA );
                 }
-                if( manaB < 10 ) {
-                    manaB ++;
-                    manaLabelB.setText( String.valueOf( manaB ) );
-                    manaProgressB.setValue( manaB );
-                }
             }
         }, 0, 2000 );
 
@@ -183,12 +171,8 @@ public class GameScreen extends ScreenAdapter {
 
         manaLabelA = new TextButton( String.valueOf( manaA ), manaStyle );
         manaLabelA.pad( 2, 10, 0, 10 );
-        manaLabelB = new TextButton( String.valueOf( manaA ), manaStyle );
-        manaLabelB.pad( 2, 10, 0, 10 );
         manaProgressA = new ProgressBar( 0, 10, 1, false, progressBarStyle );
         manaProgressA.setValue( 10 );
-        manaProgressB = new ProgressBar( 0, 10, 1, false, progressBarStyle );
-        manaProgressB.setValue( 10 );
 
         table.row();
 
@@ -199,15 +183,6 @@ public class GameScreen extends ScreenAdapter {
         manaTable.pad( 5 );
         manaTable.add( manaLabelA );
         manaTable.add( manaProgressA ).fill().expand();
-        table.add( manaTable ).fill();
-
-        table.add().expandX();
-
-        manaTable = new Table( skin );
-        manaTable.setBackground( new NinePatchDrawable( skin.getPatch( "flat-slot" ) ) );
-        manaTable.pad( 5 );
-        manaTable.add( manaLabelB );
-        manaTable.add( manaProgressB ).expand().fill();
         table.add( manaTable ).fill();
     }
 
@@ -289,53 +264,32 @@ public class GameScreen extends ScreenAdapter {
                 touchX = Math.max( 0, touchX );
                 touchX = Math.min( vWidth - 1, touchX );
                 touchX = ( touchX - touchX%100 ) + 50;
-                if( x > vWidth/2 ) {
-                    if( readyB == null )
-                        return;
-                    entity = readyB;
-                    if( manaB < entity.manaConsumption )
-                        return;
-                    entity.setPosition( touchX, touchY );
-                    entity.pack();
-                    stage.addActor( entity );
-                    manaB -= entity.manaConsumption;
-                    manaLabelB.setText( String.valueOf( manaB ) );
-                    manaProgressB.setValue( manaB );
-                    readyB = null;
-                    tempCellB = cardSlotB.getCell( cardSlotB.findActor( refStringB ) );
-                    cardSlotB.findActor( refStringB ).remove();
-                    refStringB = null;
-                    addCardB();
-                } else {
-                    if( readyA == null )
-                        return;
-                    entity = readyA;
-                    if( manaA < entity.manaConsumption )
-                        return;
-                    entity.setPosition( touchX, touchY );
-                    entity.pack();
-                    stage.addActor( entity );
-                    manaA -= entity.manaConsumption;
-                    manaLabelA.setText( String.valueOf( manaA ) );
-                    manaProgressA.setValue( manaA );
-                    readyA = null;
-                    tempCellA = cardSlotA.getCell( cardSlotA.findActor( refStringA ) );
-                    cardSlotA.findActor( refStringA ).remove();
-                    refStringA = null;
-                    addCardA();
-                }
+                
+                if( readyA == null )
+                    return;
+                entity = readyA;
+                if( entity instanceof Snail && x > vWidth/2 )
+                    return;
+                if( manaA < entity.manaConsumption )
+                    return;
+                entity.setPosition( touchX, touchY );
+                entity.pack();
+                stage.addActor( entity );
+                manaA -= entity.manaConsumption;
+                manaLabelA.setText( String.valueOf( manaA ) );
+                manaProgressA.setValue( manaA );
+                readyA = null;
+                tempCellA = cardSlotA.getCell( cardSlotA.findActor( refStringA ) );
+                cardSlotA.findActor( refStringA ).remove();
+                refStringA = null;
+                addCardA();
 
             };
 
         } );
-
         
         for( int i = 0; i < 4; i ++ ) {
             addCardA();
-        }
-
-        for( int i = 0; i < 4; i ++ ) {
-            addCardB();
         }
     }
 
@@ -363,32 +317,6 @@ public class GameScreen extends ScreenAdapter {
         }
         //cardSlotA.row();
         cardSlotA.add( cardImage ).size( 80 ).pad( 1 );
-    }
-
-    public void addCardB() {
-        final int index = random.nextInt( 8 );
-        final Image cardImage = cards.getCard( index, null );
-        cardImage.setName( String.valueOf( random.nextInt( 999999 ) ) );
-        cardImage.addListener( new ClickListener() {
-            public void clicked( InputEvent event, float x, float y ) {
-                
-                cardSlotB.invalidateHierarchy();
-                cardImage.addAction( Actions.moveBy( 0, 15, .15f ) );
-                refStringB = cardImage.getName();
-
-                if( cards.getType( index ) == Cards.SNAIL )
-                    readyB = new Snail( world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
-                else
-                    readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
-            };
-        } );
-        if( tempCellB != null ) {
-            cardImage.addAction( Actions.sequence( Actions.visible( false ), Actions.delay( 3 ), Actions.visible( true ) ) );
-            tempCellB.setActor( cardImage );
-            return;
-        }
-        //cardSlotB.row();
-        cardSlotB.add( cardImage ).size( 80 ).pad( 1 );
     }
 
     @Override
@@ -428,5 +356,4 @@ public class GameScreen extends ScreenAdapter {
     public void hide() {
         dispose();
     }
-    
 }
