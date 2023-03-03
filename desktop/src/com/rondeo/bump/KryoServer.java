@@ -45,8 +45,8 @@ public class KryoServer {
                             connection.sendTCP( tempMatch );
 
                             connected = true;
-                            System.out.println( "Connected A" );
                             System.out.println( matchDefinition.connectionIdA+"<>"+matchDefinition.connectionIdB );
+                            matches.remove( matchDefinition );
                             break;
                         }
                         if( matchDefinition.connectionIdB == -1 && matchDefinition.connectionIdA != -1 && matchDefinition.connectionIdA != connection.getID() ) {
@@ -61,8 +61,8 @@ public class KryoServer {
                             connection.sendTCP( tempMatch );
 
                             connected = true;
-                            System.out.println( "Connected B" );
                             System.out.println( matchDefinition.connectionIdA+"<>"+matchDefinition.connectionIdB );
+                            matches.remove( matchDefinition );
                             break;
                         }
                     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -21,22 +22,26 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar.ProgressBarStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.esotericsoftware.kryonet.Client;
 import com.rondeo.bump.components.Cards;
 import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
@@ -50,14 +55,18 @@ public class MultiplayerScreen extends DatabaseController {
 
     Stage stage;
     Skin skin;
+    Group actorGroup, foreGroup;
     OrthographicCamera camera;
     int vWidth = 1000, vHeight = 500;
     InputMultiplexer inputMultiplexer;
 
     TextureAtlas assets;
-    Texture terrainTexture;
+    Texture terrainTexture, cloudTexture;
 
-    public MultiplayerScreen() throws IOException {
+    Label label;
+
+    public MultiplayerScreen( Client client, int opponentId ) throws IOException {
+        super( client, opponentId );
 
         assets = new TextureAtlas( Gdx.files.internal( "assets.atlas" ) );
         cardTexture = new Texture( Gdx.files.internal( "cards.png" ) );
@@ -100,12 +109,29 @@ public class MultiplayerScreen extends DatabaseController {
 
         // Stages and Skins
         stage = new Stage( new ExtendViewport( vWidth, vHeight, camera = new OrthographicCamera( vWidth, vHeight ) ) );
+        actorGroup = new Group();
+        foreGroup = new Group();
+        stage.addActor( actorGroup );
+        stage.addActor( foreGroup );
 
         // TileMap
         terrainTexture = new Texture( Gdx.files.internal( "terrain.png" ) );
-        Image terrain = new Image( new TextureRegion( terrainTexture ) );
+        Image terrain = new Image( terrainTexture );
         terrain.setBounds( -400, -300, 1800, 1100 );
-        stage.addActor( terrain );
+        actorGroup.addActor( terrain );
+
+        // Cloud
+        cloudTexture = new Texture( Gdx.files.internal( "clouds.png" ) );
+        Image cloudImageLeft = new Image( cloudTexture );
+        cloudImageLeft.setBounds( -350, -300, 1800, 1100 );
+        foreGroup.addActor( cloudImageLeft );
+
+        Image cloudImageRight = new Image( cloudTexture );
+        cloudImageRight.setBounds( 1350, -300, -1800, 1100 );
+        foreGroup.addActor( cloudImageRight );
+        
+        cloudImageLeft.addAction( Actions.moveBy( -600, 0, 2f ) );
+        cloudImageRight.addAction( Actions.moveBy( 600, 0, 2f ) );
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -130,10 +156,13 @@ public class MultiplayerScreen extends DatabaseController {
         
         // Health
         table.row();
-        table.add().colspan( 3 );
+        table.add();
         
+        // Other UI
         table.row();
-        table.add().colspan( 3 ).expandY();
+        LabelStyle labelStyle = new LabelStyle( skin.getFont( "giygas" ), Color.WHITE );
+        label = new Label( "ready", labelStyle );
+        table.add( label ).expandY();
 
         // Cards
         table.row();
@@ -161,8 +190,25 @@ public class MultiplayerScreen extends DatabaseController {
                     manaLabelA.setText( String.valueOf( manaA ) );
                     manaProgressA.setValue( manaA );
                 }
+                
+                if( STARTTIME > 0 ) {
+                    STARTTIME --;
+                    switch( STARTTIME ) {
+                        case 3:
+                            label.setText( "ready" );
+                            break;
+                        case 2:
+                            label.setText( "set" );
+                            break;
+                        case 1:
+                            label.setText( "BUMP!" );
+                            break;
+                        default:
+                            label.setText( "" );
+                    }
+                }
             }
-        }, 0, 2000 );
+        }, 0, 1500 );
 
         // Setup label and fill bar for mana
         manaTexture = new Texture( Gdx.files.internal( "mana.png" ) );
@@ -205,7 +251,7 @@ public class MultiplayerScreen extends DatabaseController {
             readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
         readyB.setPosition( vWidth - x, y );
         readyB.pack();
-        stage.addActor( readyB );
+        actorGroup.addActor( readyB );
     }
 
     public void init() {
@@ -289,7 +335,7 @@ public class MultiplayerScreen extends DatabaseController {
                     return;
                 entity.setPosition( touchX, touchY );
                 entity.pack();
-                stage.addActor( entity );
+                actorGroup.addActor( entity );
                 manaA -= entity.manaConsumption;
                 manaLabelA.setText( String.valueOf( manaA ) );
                 manaProgressA.setValue( manaA );
@@ -341,17 +387,31 @@ public class MultiplayerScreen extends DatabaseController {
         cardSlotA.add( cardImage ).size( 80 ).pad( 1 );
     }
 
+    // Timers
+    int TIMELIMIT = 60 * 3;
+    int STARTTIME = 4;
+    boolean started = false;
+
     @Override
     public void render(float delta) {
-        
         stage.act( delta );
         stage.draw();
 
-        hud.act( delta );
+        if( started )
+            hud.act( delta );
         hud.draw();
 
         world.step(1/60f, 6, 2);
         //debugRenderer.render( world, camera.combined );
+
+        if( !started && STARTTIME <= 0 ) {
+            TIMELIMIT += TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() );
+            started = true;
+        }
+        if( started )
+            if( TimeUnit.MILLISECONDS.toMillis( System.currentTimeMillis() ) > TIMELIMIT ) {
+                // End Match
+            }
     }
 
     @Override

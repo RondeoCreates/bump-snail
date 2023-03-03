@@ -70,6 +70,8 @@ ImageTextButtonStyle: {
 		imageDown: selector
 		imageOver: selector
 		font: font
+		fontColor: black
+		up: flat-button
 	}
 }
 LabelStyle: {
@@ -93,6 +95,8 @@ LabelStyle: {
 TextButtonStyle: {
 	default: {
 		font: font
+		fontColor: black
+		up: flat-button
 	}
 }
 TextFieldStyle: {

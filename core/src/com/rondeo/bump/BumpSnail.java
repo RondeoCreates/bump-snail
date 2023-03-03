@@ -1,9 +1,7 @@
 package com.rondeo.bump;
 
-import java.io.IOException;
-
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class BumpSnail extends Game {
@@ -14,17 +12,12 @@ public class BumpSnail extends Game {
 		// setScreen( new GameScreen() );
 
 		// Multiplayer
-		try {
-			setScreen( new MultiplayerScreen() );
-		} catch ( IOException e) {
-			e.printStackTrace();
-			Gdx.app.exit();
-		}
+		setScreen( new MenuScreen( this ) );
 	}
 
 	@Override
 	public void render () {
-		ScreenUtils.clear(0, 0, 0, 1);
+        ScreenUtils.clear( Color.valueOf( "#6b99c9" ) );
 		
 		super.render();
 	}

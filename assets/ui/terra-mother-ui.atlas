@@ -29,7 +29,7 @@ cents
   index: -1
 cursor
   rotate: false
-  xy: 58, 5
+  xy: 265, 16
   size: 8, 19
   split: 0, 7, 0, 17
   pad: 0, 0, 0, 0
@@ -38,7 +38,7 @@ cursor
   index: -1
 cursor2
   rotate: false
-  xy: 253, 35
+  xy: 81, 10
   size: 18, 14
   split: 0, 17, 0, 3
   pad: 0, 0, 0, 0
@@ -97,9 +97,23 @@ label-hp
   orig: 21, 18
   offset: 0, 0
   index: -1
+label-hp
+  rotate: false
+  xy: 35, 6
+  size: 21, 18
+  orig: 21, 18
+  offset: 0, 0
+  index: -1
 label-pp
   rotate: false
-  xy: 253, 51
+  xy: 58, 6
+  size: 21, 18
+  orig: 21, 18
+  offset: 0, 0
+  index: -1
+label-pp
+  rotate: false
+  xy: 58, 6
   size: 21, 18
   orig: 21, 18
   offset: 0, 0
@@ -121,21 +135,21 @@ new-select
   index: -1
 pc-1
   rotate: false
-  xy: 253, 116
+  xy: 253, 82
   size: 29, 43
   orig: 29, 43
   offset: 0, 0
   index: -1
 pc-2
   rotate: false
-  xy: 284, 118
+  xy: 284, 83
   size: 24, 42
   orig: 24, 42
   offset: 0, 0
   index: -1
 pc-3
   rotate: false
-  xy: 253, 71
+  xy: 253, 37
   size: 27, 43
   orig: 27, 43
   offset: 0, 0
@@ -162,16 +176,24 @@ saturn-export
   orig: 193, 193
   offset: 0, 0
   index: -1
+select-overlay
+  rotate: false
+  xy: 455, 284
+  size: 32, 32
+  split: 15, 15, 15, 15
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 selector
   rotate: false
-  xy: 265, 21
+  xy: 101, 12
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
   index: -1
 selector-off
   rotate: false
-  xy: 68, 12
+  xy: 265, 2
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
@@ -211,11 +233,34 @@ white
   orig: 1, 1
   offset: 0, 0
   index: -1
+white
+  rotate: false
+  xy: 1, 1
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
 white-pixel
   rotate: false
   xy: 1, 1
   size: 1, 1
   orig: 1, 1
+  offset: 0, 0
+  index: -1
+white-pixel
+  rotate: false
+  xy: 1, 1
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+window
+  rotate: false
+  xy: 224, 230
+  size: 50, 44
+  split: 14, 15, 17, 20
+  pad: 8, 8, 8, 8
+  orig: 50, 44
   offset: 0, 0
   index: -1
 window
@@ -236,12 +281,19 @@ window-player
   orig: 85, 103
   offset: 0, 0
   index: -1
-select-overlay
+window-player
   rotate: false
-  xy: 455, 284
+  xy: 224, 276
+  size: 85, 103
+  split: 17, 18, 18, 18
+  pad: 12, 12, 12, 12
+  orig: 85, 103
+  offset: 0, 0
+  index: -1
+sword
+  rotate: false
+  xy: 253, 127
   size: 32, 32
-  split: 15, 15, 15, 15
-  pad: 0, 33, 0, 33
   orig: 32, 32
   offset: 0, 0
   index: -1
