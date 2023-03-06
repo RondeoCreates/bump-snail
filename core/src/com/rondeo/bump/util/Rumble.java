@@ -2,27 +2,25 @@ package com.rondeo.bump.util;
 
 import java.util.Random;
 
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.math.Vector3;
 
-public class Rumble extends Action {
-
+public class Rumble {
+    
     private static float time = 0;
     private static float currentTime = 0;
     private static float power = 0;
     private static float currentPower = 0;
     private static Random random;
-    private static Vector2 pos = new Vector2();
+    private static Vector3 pos = new Vector3();
 
-    public Rumble( float rumblePower, float rumbleLength ) {
+    public static void rumble( float rumblePower, float rumbleLength ) {
         random = new Random();
         power = rumblePower;
         time = rumbleLength;
         currentTime = 0;
     }
 
-    @Override
-    public boolean act( float delta ) {
+    public static Vector3 tick( float delta ) {
         if (currentTime <= time) {
             currentPower = power * ((time - currentTime) / time);
 
@@ -33,8 +31,14 @@ public class Rumble extends Action {
         } else {
             time = 0;
         }
-        getActor().moveBy( pos.x, pos.y );
-        return true;
+        return pos;
     }
-    
+
+    public static float getRumbleTimeLeft() {
+        return time;
+    }
+
+    public static Vector3 getPos() {
+        return pos;
+    }
 }

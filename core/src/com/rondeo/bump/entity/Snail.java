@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.rondeo.bump.util.MatchInfoController;
 
 public class Snail extends Entity {
     World world;
@@ -35,7 +36,10 @@ public class Snail extends Entity {
     public String referenceName;
     float width, height;
 
-    public Snail( World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin, int manaConsumption ) {
+    MatchInfoController matchInfoController;
+
+    public Snail( MatchInfoController matchInfoController, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin, int manaConsumption ) {
+        this.matchInfoController = matchInfoController;
         this.world = world;
         this.flip = flip;
         this.log = log;
@@ -124,6 +128,9 @@ public class Snail extends Entity {
         // remove snail if out of bounds
         if( ( body.getPosition().x < -100 || body.getPosition().x > 1000 + 100 ) && !isDead ) {
             isDead = true;
+            if( body.getPosition().x > 1000 + 100 && !flip ) {
+                matchInfoController.update( power * 10 );
+            }
             Gdx.app.postRunnable( new Runnable() {
                 @Override
                 public void run() {

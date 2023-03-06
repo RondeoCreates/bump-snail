@@ -1,1 +1,1 @@
-java -jar bump-snail-server.jar
+java -jar server.jar

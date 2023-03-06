@@ -9,6 +9,7 @@ public class Network {
         kryo.register( MatchDefinition.class );
         kryo.register( FindMatch.class );
         kryo.register( Account.class );
+        kryo.register( MatchInfo.class );
     }
     
     public static class Position {
@@ -37,7 +38,8 @@ public class Network {
     }
 
     public static class MatchInfo {
-        int points = 0;
+        public int points = 0;
+        public int opponentId = -1;
     }
 
     public static class MatchDefinition {

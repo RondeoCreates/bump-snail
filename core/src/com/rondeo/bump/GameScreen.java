@@ -42,6 +42,7 @@ import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
 
+@Deprecated
 public class GameScreen extends ScreenAdapter {
     World world;
     Box2DDebugRenderer debugRenderer;
@@ -351,7 +352,7 @@ public class GameScreen extends ScreenAdapter {
                 refStringA = cardImage.getName();
                 
                 if( cards.getType( index ) == Cards.SNAIL )
-                    readyA = new Snail( world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                    readyA = new Snail( null, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
                 else
                     readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
             };
@@ -377,7 +378,7 @@ public class GameScreen extends ScreenAdapter {
                 refStringB = cardImage.getName();
 
                 if( cards.getType( index ) == Cards.SNAIL )
-                    readyB = new Snail( world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                    readyB = new Snail( null, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
                 else
                     readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
             };

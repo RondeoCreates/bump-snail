@@ -6,6 +6,7 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Listener;
+import com.rondeo.bump.util.Network.MatchInfo;
 import com.rondeo.bump.util.Network.Position;
 
 public abstract class DatabaseController extends ScreenAdapter implements DBInterface {
@@ -26,10 +27,16 @@ public abstract class DatabaseController extends ScreenAdapter implements DBInte
                     Position position = (Position) object;
                     placeOpponent( position.x, position.y, position.cardIndex );
                 }
+                if( object instanceof MatchInfo ) {
+                    MatchInfo info = (MatchInfo) object;
+                    updateOpponentInfo( info.points );
+                }
             };
         } );
     }
 
-    public void sendPosition( float x, float y, int index ) {}
+    public void sendPosition( float x, float y, int index ) {};
+
+    public void updateOpponentInfo( int points ) {};
     
 }

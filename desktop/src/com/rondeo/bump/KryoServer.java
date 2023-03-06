@@ -10,6 +10,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.rondeo.bump.util.Network;
 import com.rondeo.bump.util.Network.FindMatch;
 import com.rondeo.bump.util.Network.MatchDefinition;
+import com.rondeo.bump.util.Network.MatchInfo;
 import com.rondeo.bump.util.Network.Position;
 
 public class KryoServer {
@@ -75,6 +76,10 @@ public class KryoServer {
                 if( object instanceof Position ) {
                     Position position = (Position) object;
                     server.sendToTCP( position.connectionId, position );
+                }
+                if( object instanceof MatchInfo ) {
+                    MatchInfo info = (MatchInfo) object;
+                    server.sendToTCP( info.opponentId, object );
                 }
             };
         } );

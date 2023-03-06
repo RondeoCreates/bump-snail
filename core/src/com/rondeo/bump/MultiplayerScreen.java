@@ -40,6 +40,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryonet.Client;
 import com.rondeo.bump.components.Cards;
@@ -47,6 +48,7 @@ import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
 import com.rondeo.bump.util.DatabaseController;
+import com.rondeo.bump.util.MatchInfoController;
 import com.rondeo.bump.util.Network.Position;
 
 public class MultiplayerScreen extends DatabaseController {
@@ -59,14 +61,14 @@ public class MultiplayerScreen extends DatabaseController {
     OrthographicCamera camera;
     int vWidth = 1000, vHeight = 500;
     InputMultiplexer inputMultiplexer;
-
+    MatchInfoController matchInfoController;
     TextureAtlas assets;
     Texture terrainTexture, cloudTexture;
 
-    Label label;
-
     public MultiplayerScreen( Client client, int opponentId ) throws IOException {
         super( client, opponentId );
+
+        matchInfoController = new MatchInfoController( client, opponentId );
 
         assets = new TextureAtlas( Gdx.files.internal( "assets.atlas" ) );
         cardTexture = new Texture( Gdx.files.internal( "cards.png" ) );
@@ -142,7 +144,9 @@ public class MultiplayerScreen extends DatabaseController {
     Texture cardTexture, manaTexture;
     TextButton manaLabelA;
     ProgressBar manaProgressA;
+    Label label, timerLabel;
     Timer timer;
+    Label myPointsLabel, oppPointsLabel;
 
     @Override
     public void show() {
@@ -154,15 +158,20 @@ public class MultiplayerScreen extends DatabaseController {
         table.setFillParent( true );
         hud.addActor( table );
         
-        // Health
+        // Time
+        timerLabel = new Label( "Time Left: "+String.valueOf( TIMELIMIT ), skin );
         table.row();
+        table.add();
+        table.add( timerLabel );
         table.add();
         
         // Other UI
         table.row();
         LabelStyle labelStyle = new LabelStyle( skin.getFont( "giygas" ), Color.WHITE );
         label = new Label( "ready", labelStyle );
+        table.add();
         table.add( label ).expandY();
+        table.add();
 
         // Cards
         table.row();
@@ -170,7 +179,10 @@ public class MultiplayerScreen extends DatabaseController {
         cardSlotA = new Table( skin );
         cardSlotA.setBackground( new NinePatchDrawable( skin.getPatch( "flat-slot" ) ) );
         cardSlotA.pad( 5 );
+        table.add( myPointsLabel = labelPoints( myPointsLabel ) ).fill().minWidth( 200 );;
         table.add( cardSlotA );
+        table.add( oppPointsLabel = labelPoints( oppPointsLabel ) ).fill().minWidth( 200 );
+        matchInfoController.setLabel( myPointsLabel );
 
         init();
 
@@ -196,12 +208,15 @@ public class MultiplayerScreen extends DatabaseController {
                     switch( STARTTIME ) {
                         case 3:
                             label.setText( "ready" );
+                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
                             break;
                         case 2:
                             label.setText( "set" );
+                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
                             break;
                         case 1:
                             label.setText( "BUMP!" );
+                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
                             break;
                         default:
                             label.setText( "" );
@@ -232,7 +247,24 @@ public class MultiplayerScreen extends DatabaseController {
         manaTable.pad( 5 );
         manaTable.add( manaLabelA );
         manaTable.add( manaProgressA ).fill().expand();
+
+        table.add();
         table.add( manaTable ).fill();
+        table.add();
+
+        //hud.setDebugAll( true );
+    }
+
+    public Label labelPoints( Label label ) {
+        LabelStyle labelStyle = new LabelStyle( skin.getFont( "giygas" ), Color.WHITE );
+        label = new Label( "0" , labelStyle );
+        label.setAlignment( Align.center );
+        return label;
+    }
+
+    @Override
+    public void updateOpponentInfo( int points ) {
+        oppPointsLabel.setText( points );
     }
 
     Cards cards;
@@ -244,14 +276,20 @@ public class MultiplayerScreen extends DatabaseController {
     int manaA = 10, manaB = 10;
 
     @Override
-    public void placeOpponent( float x, float y, int index ) {
+    public void placeOpponent( final float x, final float y, int index ) {
         if( cards.getType( index ) == Cards.SNAIL )
-            readyB = new Snail( world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+            readyB = new Snail( matchInfoController, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
         else
             readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
-        readyB.setPosition( vWidth - x, y );
-        readyB.pack();
-        actorGroup.addActor( readyB );
+        Gdx.app.postRunnable( new Runnable() {
+            @Override
+            public void run() {
+                readyB.setPosition( vWidth - x, y );
+                readyB.pack();
+                actorGroup.addActor( readyB );
+            };
+        } );
+        
     }
 
     public void init() {
@@ -370,7 +408,7 @@ public class MultiplayerScreen extends DatabaseController {
                 refStringA = cardImage.getName();
                 
                 if( cards.getType( index ) == Cards.SNAIL ) {
-                    readyA = new Snail( world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                    readyA = new Snail( matchInfoController, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
                     readyPosition = new Position( opponentId, 25, 0, index );
                 } else {
                     readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
@@ -406,12 +444,16 @@ public class MultiplayerScreen extends DatabaseController {
 
         if( !started && STARTTIME <= 0 ) {
             TIMELIMIT += TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() );
+            System.out.println( TIMELIMIT );
             started = true;
         }
-        if( started )
-            if( TimeUnit.MILLISECONDS.toMillis( System.currentTimeMillis() ) > TIMELIMIT ) {
+        if( started ) {
+            if( TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) > TIMELIMIT ) {
                 // End Match
+            } else {
+                timerLabel.setText( ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) / 60 + ":" + ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) % 60 );
             }
+        }
     }
 
     @Override
@@ -426,6 +468,7 @@ public class MultiplayerScreen extends DatabaseController {
         stage.dispose();
         hud.dispose();
         skin.dispose();
+        world.dispose();
         
         assets.dispose();
         terrainTexture.dispose();
