@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton.ImageTextButtonStyle;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public class MenuScreen extends ScreenAdapter {
@@ -26,7 +24,7 @@ public class MenuScreen extends ScreenAdapter {
     OrthographicCamera camera;
     
     public MenuScreen( final BumpSnail game ) {
-        skin = new Skin( Gdx.files.internal( "ui/terra-mother-ui.json" ) );
+        skin = new Skin( Gdx.files.internal( "default/default.json" ) );
 
         stage = new Stage( new ExtendViewport( 1000, 500, camera = new OrthographicCamera( 1000, 500 ) ) );
         table = new Table( skin );
@@ -37,10 +35,9 @@ public class MenuScreen extends ScreenAdapter {
         Image image = new Image( arenaTexture );
         table.add( image );
         
-        ImageTextButtonStyle style = new ImageTextButtonStyle( skin.getDrawable( "flat-button" ), skin.getDrawable( "flat-button" ), skin.getDrawable( "flat-button" ), skin.getFont( "font" ) );
-        style.fontColor = Color.BLACK;
-        style.imageUp = skin.getDrawable( "sword" );
-        ImageTextButton playButton = new ImageTextButton(  "Find Match", style );
+        ImageTextButton playButton = new ImageTextButton(  "FIND MATCH", skin );
+        playButton.padLeft( 20 );
+        playButton.padRight( 20 );
         playButton.addListener( new InputListener() {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;

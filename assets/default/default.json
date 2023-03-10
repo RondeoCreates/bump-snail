@@ -1,0 +1,114 @@
+{
+BitmapFont: {
+	comical_cartoon: {
+		file: comical_cartoon.fnt
+		scaledSize: -1
+		markupEnabled: false
+		flip: false
+	}
+	font-export: {
+		file: font-export.fnt
+		scaledSize: -1
+		markupEnabled: false
+		flip: false
+	}
+	super_comic: {
+		file: super_comic.fnt
+		scaledSize: -1
+		markupEnabled: false
+		flip: false
+	}
+}
+Color: {
+	Ash: {
+		hex: 737373ff
+	}
+	Black: {
+		hex: 000000ff
+	}
+	Cyan: {
+		hex: b5fcffff
+	}
+	White: {
+		hex: ffffffff
+	}
+}
+TintedDrawable: {
+	cursor: {
+		name: white-pixel
+		color: Black
+		minWidth: 1
+		minHeight: 30
+	}
+}
+ImageTextButtonStyle: {
+	default: {
+		imageUp: sword
+		font: super_comic
+		fontColor: White
+		downFontColor: Cyan
+		up: default_btn_up
+		down: default_btn_dwn
+		pressedOffsetY: 8
+		unpressedOffsetY: 8
+		checkedOffsetY: 8
+	}
+}
+LabelStyle: {
+	default: {
+		font: super_comic
+		fontColor: White
+	}
+	big: {
+		font: comical_cartoon
+		fontColor: White
+	}
+	small: {
+		font: font-export
+		fontColor: Black
+	}
+}
+ProgressBarStyle: {
+	default-horizontal: {
+		background: default_progress_bg
+		knobBefore: default_progress_bar
+	}
+}
+TextButtonStyle: {
+	default: {
+		font: super_comic
+		fontColor: White
+		downFontColor: Cyan
+		up: default_btn_up
+		down: default_btn_dwn
+		pressedOffsetY: 10
+		unpressedOffsetY: 10
+		checkedOffsetY: 10
+	}
+	secondary: {
+		font: super_comic
+		fontColor: White
+		downFontColor: Cyan
+		up: secondary_btn_up
+		down: secondary_btn_dwn
+		pressedOffsetY: 10
+		unpressedOffsetY: 10
+		checkedOffsetY: 10
+	}
+}
+TextFieldStyle: {
+	default: {
+		font: font-export
+		fontColor: Black
+		background: default_field
+		cursor: cursor
+		messageFont: font-export
+		messageFontColor: Ash
+	}
+}
+TextTooltipStyle: {
+	default: {
+		label: default
+	}
+}
+}

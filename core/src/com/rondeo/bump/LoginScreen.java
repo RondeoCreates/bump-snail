@@ -3,6 +3,7 @@ package com.rondeo.bump;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -12,6 +13,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Null;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryo.Kryo;
@@ -58,7 +62,13 @@ public class LoginScreen extends ScreenAdapter {
                                 preferences.putString( "fullname", account.fullname );
                                 preferences.putInteger( "points", account.points );
                                 preferences.flush();
-                                game.setScreen( new MenuScreen( game ) );
+                                table.addAction( Actions.sequence( Actions.moveBy( 500, 0, .3f ), new Action() {
+                                    @Override
+                                    public boolean act(float delta) {
+                                        game.setScreen( new MenuScreen( game ) );
+                                        return true;
+                                    }
+                                } ) );
                             }
                         } );
                     } else {
@@ -72,14 +82,19 @@ public class LoginScreen extends ScreenAdapter {
             };
         } );
 
-        skin = new Skin( Gdx.files.internal( "ui/terra-mother-ui.json" ) );
+        skin = new Skin( Gdx.files.internal( "default/default.json" ) );
 
         stage = new Stage( new ExtendViewport( 1000, 500 ) );
         table = new Table( skin );
-        table.setFillParent( true );
+        table.setBackground( skin.getDrawable( "secondary_window" ) );
+        table.setPosition( 1000, 0 );
+        table.addAction( Actions.moveBy( -500, 0, .3f ) );
+        table.setSize( 500, 500 );
+        //table.setFillParent( true );
         stage.addActor( table );
 
-        message = new Label( text, skin );
+        message = new Label( text, skin.get( "small", LabelStyle.class ) );
+        message.setAlignment( Align.center );
 
         userField = new TextField( "", skin );
         userField.setMessageText( "Username" );
@@ -88,7 +103,7 @@ public class LoginScreen extends ScreenAdapter {
         passField.setMessageText( "Password" );
         passField.setPasswordCharacter( '•' );
         TextButton loginButton = new TextButton( "LOG IN", skin );
-        loginButton.pad( 15 );
+        //loginButton.pad( 15 );
         loginButton.addListener( new InputListener() {
             public boolean touchDown( InputEvent event, float x, float y, int pointer, int button ) {
                 String username = userField.getText();
@@ -102,28 +117,34 @@ public class LoginScreen extends ScreenAdapter {
             };
         } );
 
-        TextButton regButton = new TextButton( "REGISTER", skin );
-        regButton.pad( 15 );
+        TextButton regButton = new TextButton( "REGISTER", skin.get( "secondary", TextButtonStyle.class ) );
+        //regButton.pad( 15 );
         regButton.addListener( new InputListener() {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen( new RegisterScreen( game ) );
+                table.addAction( Actions.sequence( Actions.moveBy( 500, 0, .3f ), new Action() {
+                    @Override
+                    public boolean act(float delta) {
+                        game.setScreen( new RegisterScreen( game ) );
+                        return true;
+                    }
+                } ) );
                 return true;
             };
         } );
 
         table.add().width( 300 );
         table.row();
-        table.add( message ).fill();
+        table.add( message ).fill().pad( 10 );
         table.row();
-        table.add( userField ).fill();
+        table.add( userField ).fill().pad( 10 ).height( 50 );
         table.row();
-        table.add( passField ).fill();
+        table.add( passField ).fill().pad( 10 ).height( 50 );
         table.row();
-        table.add( loginButton ).fill();
+        table.add( loginButton ).fill().pad( 10 );
         table.row();
-        table.add( new Label( "or", skin ) );
+        table.add( new Label( "or", skin.get( "small", LabelStyle.class ) ) );
         table.row();
-        table.add( regButton ).fill();
+        table.add( regButton ).fill().pad( 10 );
 
         Gdx.input.setInputProcessor( stage );
     }
@@ -147,6 +168,13 @@ public class LoginScreen extends ScreenAdapter {
         stage.draw();
 
         super.render(delta);
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update( width, height );
+
+        super.resize(width, height);
     }
 
     @Override

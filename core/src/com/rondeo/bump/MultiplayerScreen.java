@@ -35,7 +35,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar.ProgressBarStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
@@ -242,14 +241,14 @@ public class MultiplayerScreen extends DatabaseController {
         // Setup label and fill bar for mana
         manaTexture = new Texture( Gdx.files.internal( "mana.png" ) );
         TextButtonStyle manaStyle = new TextButtonStyle( new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), skin.getFont( "font" ) );
-        ProgressBarStyle progressBarStyle = new ProgressBarStyle( skin.getDrawable( "black-tint" ), skin.getDrawable( "purple-tint" ) );
-        progressBarStyle.background.setMinHeight( 16 );
-        progressBarStyle.knob.setMinHeight( 12 );
-        progressBarStyle.knobBefore = progressBarStyle.knob;
+        //ProgressBarStyle progressBarStyle = new ProgressBarStyle( skin.getDrawable( "black-tint" ), skin.getDrawable( "purple-tint" ) );
+        //progressBarStyle.background.setMinHeight( 16 );
+        //progressBarStyle.knob.setMinHeight( 12 );
+        //progressBarStyle.knobBefore = progressBarStyle.knob;
 
         manaLabelA = new TextButton( String.valueOf( manaA ), manaStyle );
         manaLabelA.pad( 2, 10, 0, 10 );
-        manaProgressA = new ProgressBar( 0, 10, 1, false, progressBarStyle );
+        manaProgressA = new ProgressBar( 0, 10, 1, false, skin );
         manaProgressA.setValue( 10 );
 
         table.row();

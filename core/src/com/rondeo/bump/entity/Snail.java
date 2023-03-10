@@ -13,7 +13,9 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar.ProgressBarStyle;
 import com.rondeo.bump.util.MatchInfoController;
 
 public class Snail extends Entity {
@@ -24,6 +26,7 @@ public class Snail extends Entity {
     Vector2 targetPoint = new Vector2();
     public int power = 1;
     public int health = 5;
+    public int maxHealth = 0;
     public boolean flip;
     boolean log;
     boolean animate = true;
@@ -38,6 +41,8 @@ public class Snail extends Entity {
 
     MatchInfoController matchInfoController;
 
+    ProgressBar healthBar;
+
     public Snail( MatchInfoController matchInfoController, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin, int manaConsumption ) {
         this.matchInfoController = matchInfoController;
         this.world = world;
@@ -49,6 +54,7 @@ public class Snail extends Entity {
         this.height = height;
 
         health += power;
+        maxHealth = health;
 
         setBounds( x, y, width, height );
         
@@ -57,6 +63,8 @@ public class Snail extends Entity {
         walkAnimation = new Animation<TextureRegion>( 0.14f, animation );
         walkAnimation.setPlayMode( PlayMode.LOOP );
         label = new Label( String.valueOf( power ), skin );
+
+        healthBar = new ProgressBar( 0, health, 1, false, skin.get( "red-horizontal", ProgressBarStyle.class) );
     }
 
     @Override
@@ -111,6 +119,7 @@ public class Snail extends Entity {
         body.setLinearVelocity( targetPoint.x * 5, 0 );
         //body.applyLinearImpulse( targetPoint, body.getWorldCenter(), true );
         setBounds( body.getPosition().x - width, body.getPosition().y -height, width*2, height*2 );
+        healthBar.setBounds( body.getPosition().x - width, body.getPosition().y + height + power, width*4, 2 );
         
         animate = false;
         if( flip ) {
@@ -160,6 +169,11 @@ public class Snail extends Entity {
             flip ? - getWidth() - ( 20 + scale*power) : getWidth() + ( 20 + scale*power), 
             getHeight() + ( 20 + scale*power) );
         //label.draw( batch, parentAlpha );
+
+        if( health < maxHealth ) {
+            healthBar.setValue( health );
+            healthBar.draw( batch, parentAlpha );
+        }
     }
 
 }

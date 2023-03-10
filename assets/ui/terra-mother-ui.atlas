@@ -29,7 +29,7 @@ cents
   index: -1
 cursor
   rotate: false
-  xy: 265, 16
+  xy: 102, 5
   size: 8, 19
   split: 0, 7, 0, 17
   pad: 0, 0, 0, 0
@@ -38,7 +38,7 @@ cursor
   index: -1
 cursor2
   rotate: false
-  xy: 81, 10
+  xy: 58, 10
   size: 18, 14
   split: 0, 17, 0, 3
   pad: 0, 0, 0, 0
@@ -99,7 +99,7 @@ label-hp
   index: -1
 label-pp
   rotate: false
-  xy: 58, 6
+  xy: 287, 98
   size: 21, 18
   orig: 21, 18
   offset: 0, 0
@@ -121,21 +121,21 @@ new-select
   index: -1
 pc-1
   rotate: false
-  xy: 253, 82
+  xy: 253, 48
   size: 29, 43
   orig: 29, 43
   offset: 0, 0
   index: -1
 pc-2
   rotate: false
-  xy: 284, 83
+  xy: 287, 118
   size: 24, 42
   orig: 24, 42
   offset: 0, 0
   index: -1
 pc-3
   rotate: false
-  xy: 253, 37
+  xy: 265, 3
   size: 27, 43
   orig: 27, 43
   offset: 0, 0
@@ -172,14 +172,14 @@ select-overlay
   index: -1
 selector
   rotate: false
-  xy: 101, 12
+  xy: 112, 12
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
   index: -1
 selector-off
   rotate: false
-  xy: 265, 2
+  xy: 120, 12
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
@@ -242,6 +242,33 @@ window-player
   split: 17, 18, 18, 18
   pad: 12, 12, 12, 12
   orig: 85, 103
+  offset: 0, 0
+  index: -1
+progress
+  rotate: false
+  xy: 253, 93
+  size: 32, 32
+  split: 4, 4, 16, 3
+  pad: 0, 33, 0, 33
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+progress-bg
+  rotate: false
+  xy: 90, 11
+  size: 10, 13
+  split: 3, 3, 3, 3
+  pad: 0, 11, 0, 14
+  orig: 10, 13
+  offset: 0, 0
+  index: -1
+progress-sm
+  rotate: false
+  xy: 78, 11
+  size: 10, 13
+  split: 4, 4, 6, 6
+  pad: 0, 11, 0, 14
+  orig: 10, 13
   offset: 0, 0
   index: -1
 sword

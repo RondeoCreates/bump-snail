@@ -23,6 +23,9 @@ Color: {
 	purple: {
 		hex: ce21d4ff
 	}
+	Red: {
+		hex: ff0000ff
+	}
 	selection: {
 		hex: c5c5c5ff
 	}
@@ -63,6 +66,10 @@ TintedDrawable: {
 		minWidth: 1
 		minHeight: 16
 	}
+	progress-sm-red: {
+		name: progress-sm
+		color: Red
+	}
 }
 ImageTextButtonStyle: {
 	default: {
@@ -90,6 +97,16 @@ LabelStyle: {
 	black: {
 		font: font
 		fontColor: black
+	}
+}
+ProgressBarStyle: {
+	default-horizontal: {
+		background: progress-bg
+		knobBefore: progress-sm
+	}
+	red-horizontal: {
+		background: progress-bg
+		knobBefore: progress-sm-red
 	}
 }
 TextButtonStyle: {
