@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.async.AsyncTask;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.rondeo.bump.util.Network;
 import com.rondeo.bump.util.Network.FindMatch;
@@ -81,22 +82,21 @@ public class MatchFinderScreen extends ScreenAdapter {
                 final Client client = new Client();
                 client.start();
                 
-                try {
-                    client.connect( 5000, client.discoverHost( 80, 5000 ), 80, 80 );
-                } catch( Exception e ) {
-                    client.connect( 5 * 1000, "34.148.75.79", 80, 80 );
-                }
+                //try {
+                //    client.connect( 5000, client.discoverHost( 80, 5000 ), 80, 80 );
+                //} catch( Exception e ) {
+                    client.connect( 5 * 1000, "97.74.80.16", 80, 80 );
+                //}
 
                 Kryo kryo = client.getKryo();
                 Network.register( kryo );
 
                 FindMatch findMatch = new FindMatch();
                 findMatch.connectionId = client.getID();
-                System.out.println( client.getID() );
                 client.sendTCP( findMatch );
 
                 client.addListener( new Listener() {
-                    public void received(com.esotericsoftware.kryonet.Connection connection, Object object) {
+                    public void received( Connection connection, Object object) {
                         if( object instanceof FindMatch ) {
                             FindMatch findMatch = (FindMatch) object;
                             final int opponentId = findMatch.connectionId;

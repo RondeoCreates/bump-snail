@@ -49,6 +49,9 @@ project(":desktop") {
         // box2d
         implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
+
+        //sqlite
+        implementation 'org.xerial:sqlite-jdbc:3.41.0.0'
     }
 }
 

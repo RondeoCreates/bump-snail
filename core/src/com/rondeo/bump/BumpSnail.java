@@ -12,7 +12,10 @@ public class BumpSnail extends Game {
 		// setScreen( new GameScreen() );
 
 		// Multiplayer
-		setScreen( new MenuScreen( this ) );
+		//setScreen( new MenuScreen( this ) );
+
+		// Login
+		setScreen( new LoginScreen( this, "" ) );
 	}
 
 	@Override

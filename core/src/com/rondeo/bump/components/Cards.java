@@ -13,7 +13,7 @@ public class Cards {
     int[] mana;
     int[] type;
 
-    public static int SNAIL = 0, SPELL = 1;
+    public static final int SNAIL = 0, SPELL = 1, DMG = 2;
     
     public Cards( TextureRegion[] cards, String[] regions, int[] power, int[] mana, int[] type ) {
         this.cards = cards;
@@ -33,7 +33,7 @@ public class Cards {
     }
 
     public TextureRegion[] getAnimation( TextureAtlas atlas, int tileWidth, int tileHeight, int index ) {
-        return atlas.findRegion( regions[index] ).split( tileWidth, tileHeight )[0];
+        return atlas.findRegions( regions[index] ).toArray();
     }
 
     public int getPower( int index ) {

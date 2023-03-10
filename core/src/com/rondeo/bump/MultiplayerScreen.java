@@ -44,6 +44,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryonet.Client;
 import com.rondeo.bump.components.Cards;
+import com.rondeo.bump.entity.Damage;
 import com.rondeo.bump.entity.Entity;
 import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
@@ -79,15 +80,26 @@ public class MultiplayerScreen extends DatabaseController {
         world.setContactListener( new ContactListener() {
             private Spell tempSpell;
             private Snail tempSnail;
+            private Damage tempDamage;
             @Override
             public void beginContact(Contact contact) {
                 if( ( contact.getFixtureA().isSensor() && !contact.getFixtureB().isSensor() ) || ( !contact.getFixtureA().isSensor() && contact.getFixtureB().isSensor() ) ) {
                     // TODO: apply spell
-                    tempSpell = (Spell) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
-                    tempSnail = (Snail) ( contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
-                    if( tempSpell.target == tempSnail.flip ) {
-                        tempSnail.power += tempSpell.power;
-                        tempSnail.changeStat();
+                    if( ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() ) instanceof Damage ) {
+                        tempDamage = (Damage) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        tempSnail = (Snail) ( contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        if( tempDamage.target == tempSnail.flip ) {
+                            tempSnail.health += tempDamage.power;
+                            tempSnail.checkDeath();
+                            //System.out.println( tempSnail.health );
+                        }
+                    } else {
+                        tempSpell = (Spell) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        tempSnail = (Snail) ( contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        if( tempSpell.target == tempSnail.flip ) {
+                            tempSnail.power += tempSpell.power;
+                            tempSnail.changeStat();
+                        }
                     }
                 }
             }
@@ -95,11 +107,13 @@ public class MultiplayerScreen extends DatabaseController {
             public void endContact(Contact contact) {
                 if( ( contact.getFixtureA().isSensor() && !contact.getFixtureB().isSensor() ) || ( !contact.getFixtureA().isSensor() && contact.getFixtureB().isSensor() ) ) {
                     // TODO: apply spell
-                    tempSpell = (Spell) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
-                    tempSnail = (Snail) ( contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
-                    if( tempSpell.target == tempSnail.flip ) {
-                        tempSnail.power -= tempSpell.power;
-                        tempSnail.changeStat();
+                    if( ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() ) instanceof Damage ) { } else {
+                        tempSpell = (Spell) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        tempSnail = (Snail) ( contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
+                        if( tempSpell.target == tempSnail.flip ) {
+                            tempSnail.power -= tempSpell.power;
+                            tempSnail.changeStat();
+                        }
                     }
                 }
             }
@@ -277,10 +291,17 @@ public class MultiplayerScreen extends DatabaseController {
 
     @Override
     public void placeOpponent( final float x, final float y, int index ) {
-        if( cards.getType( index ) == Cards.SNAIL )
-            readyB = new Snail( matchInfoController, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
-        else
-            readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+        switch( cards.getType( index ) ) {
+            case Cards.SNAIL:
+                readyB = new Snail( matchInfoController, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+            break;
+            case Cards.SPELL:
+                readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+            break;
+            case Cards.DMG:
+                readyB = new Damage( world, 0, 0, 50, 50, true, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+            break;
+        }
         Gdx.app.postRunnable( new Runnable() {
             @Override
             public void run() {
@@ -296,10 +317,10 @@ public class MultiplayerScreen extends DatabaseController {
 
         cards = new Cards( 
             TextureRegion.split( cardTexture, 36, 36 )[0], 
-            new String[] { "snailv1", "snailv2", "snailv3", "snailv4", "snailv5", "spellR", "spellP", "spellP" }, 
-            new int[] { 1, 2, 3, 4, 5, 3, -1, -3 }, 
+            new String[] { "snailv1", "snailv2", "snailv3", "snailv4", "snailv5", "spellR", "thunder", "spellP" }, 
+            new int[] { 1, 2, 3, 4, 5, 3, -5, -3 }, 
             new int[] { 2, 3, 4, 6, 8, 4, 4, 4 },
-            new int[] { 0, 0, 0, 0, 0, 1, 1, 1 }
+            new int[] { 0, 0, 0, 0, 0, 1, 2, 1 }
         );
 
         stage.addListener( new InputListener() {
@@ -321,7 +342,7 @@ public class MultiplayerScreen extends DatabaseController {
                     indicator.setPosition( x - x%100, y - y%100 );
                     indicator.setSize( 100, 100 );
                     if( readyA != null || readyB != null ) {
-                        if( (readyA == null ? readyB : readyA) instanceof Spell ) {
+                        if( !((readyA == null ? readyB : readyA) instanceof Damage) && (readyA == null ? readyB : readyA) instanceof Spell ) {
                             indicator.setPosition( (x - x%100) - 100, y - y%100 );
                             indicator.setSize( 300, 100 );
                         }
@@ -339,7 +360,7 @@ public class MultiplayerScreen extends DatabaseController {
                     indicator.setPosition( x - x%100, y - y%100 );
                     indicator.setSize( 100, 100 );
                     if( readyA != null || readyB != null ) {
-                        if( (readyA == null ? readyB : readyA) instanceof Spell ) {
+                        if( !((readyA == null ? readyB : readyA) instanceof Damage) && (readyA == null ? readyB : readyA) instanceof Spell ) {
                             indicator.setPosition( (x - x%100) - 100, y - y%100 );
                             indicator.setSize( 300, 100 );
                         }
@@ -406,13 +427,19 @@ public class MultiplayerScreen extends DatabaseController {
                 cardSlotA.invalidateHierarchy();
                 cardImage.addAction( Actions.moveBy( 0, 15, .15f ) );
                 refStringA = cardImage.getName();
-                
-                if( cards.getType( index ) == Cards.SNAIL ) {
-                    readyA = new Snail( matchInfoController, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
-                    readyPosition = new Position( opponentId, 25, 0, index );
-                } else {
-                    readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
-                    readyPosition = new Position( opponentId, 0, 0, index );
+                switch( cards.getType( index ) ) {
+                    case Cards.SNAIL:
+                        readyA = new Snail( matchInfoController, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                        readyPosition = new Position( opponentId, 25, 0, index );
+                    break;
+                    case Cards.SPELL:
+                        readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
+                        readyPosition = new Position( opponentId, 0, 0, index );
+                    break;
+                    case Cards.DMG:
+                        readyA = new Damage( world, 0, 0, 50, 50, false, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
+                        readyPosition = new Position( opponentId, 0, 0, index );
+                    break;
                 }
             };
         } );
@@ -444,7 +471,6 @@ public class MultiplayerScreen extends DatabaseController {
 
         if( !started && STARTTIME <= 0 ) {
             TIMELIMIT += TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() );
-            System.out.println( TIMELIMIT );
             started = true;
         }
         if( started ) {

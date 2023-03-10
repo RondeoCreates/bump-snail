@@ -1,6 +1,7 @@
 package com.rondeo.bump;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -8,17 +9,19 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.rondeo.bump.util.Network;
+import com.rondeo.bump.util.Network.Account;
 import com.rondeo.bump.util.Network.FindMatch;
 import com.rondeo.bump.util.Network.MatchDefinition;
 import com.rondeo.bump.util.Network.MatchInfo;
+import com.rondeo.bump.util.Network.Message;
 import com.rondeo.bump.util.Network.Position;
 
-public class KryoServer {
+public class KryoServer extends DatabaseController {
     Server server;
     Kryo kryo;
     ArrayList<MatchDefinition> matches = new ArrayList<>();
 
-	public KryoServer () throws IOException {
+	public KryoServer () throws IOException, SQLException {
         server = new Server();
         server.start();
         server.bind( 80, 80 );
@@ -46,7 +49,6 @@ public class KryoServer {
                             connection.sendTCP( tempMatch );
 
                             connected = true;
-                            System.out.println( matchDefinition.connectionIdA+"<>"+matchDefinition.connectionIdB );
                             matches.remove( matchDefinition );
                             break;
                         }
@@ -62,7 +64,6 @@ public class KryoServer {
                             connection.sendTCP( tempMatch );
 
                             connected = true;
-                            System.out.println( matchDefinition.connectionIdA+"<>"+matchDefinition.connectionIdB );
                             matches.remove( matchDefinition );
                             break;
                         }
@@ -81,11 +82,38 @@ public class KryoServer {
                     MatchInfo info = (MatchInfo) object;
                     server.sendToTCP( info.opponentId, object );
                 }
+
+                // Account
+                if( object instanceof Account ) {
+                    Account account = (Account) object;
+                    int connectionId = account.connectionId;
+                    try {
+                        switch( account.action ) {
+                            case 0:
+                                Message result = registerUser( account.username, account.password, account.fullname );
+                                server.sendToTCP( connectionId, result );
+                            break;
+                            case 1:
+                                account = loginUser( account.username, account.password );
+                                account.connectionId = connectionId;
+                                server.sendToTCP( connectionId, account );
+                            break;
+                            case 2:
+                                account = updatePoints( account.ID, account.points );
+                                account.connectionId = connectionId;
+                                server.sendToTCP( connectionId, account );
+                            break;
+                        }
+                    } catch( Exception e ) {
+                        e.printStackTrace();
+                    }
+                }
+                
             };
         } );
     }
 
-	public static void main (String[] args) throws IOException {
+	public static void main (String[] args) throws IOException, SQLException {
 		new KryoServer();
 	}
 }

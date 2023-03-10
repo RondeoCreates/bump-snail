@@ -94,6 +94,12 @@ public class Snail extends Entity {
         targetPoint.set( flip ? -5*Math.max( 0, power) : 5*Math.max( 0, power), 0 );
     }
 
+    public void checkDeath() {
+        if( health <= 0 ) {
+            isDead = true;
+        } 
+    }
+
     @Override
     public void act(float delta) {
         if( delta == 0 )
@@ -131,6 +137,8 @@ public class Snail extends Entity {
             if( body.getPosition().x > 1000 + 100 && !flip ) {
                 matchInfoController.update( power * 10 );
             }
+        }
+        if( isDead ) {
             Gdx.app.postRunnable( new Runnable() {
                 @Override
                 public void run() {

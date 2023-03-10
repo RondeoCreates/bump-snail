@@ -10,6 +10,7 @@ public class Network {
         kryo.register( FindMatch.class );
         kryo.register( Account.class );
         kryo.register( MatchInfo.class );
+        kryo.register( Message.class );
     }
     
     public static class Position {
@@ -32,9 +33,28 @@ public class Network {
     }
 
     public static class Account {
+        public int connectionId;
+        
+        public int ID;
         public String username;
         public String password;
         public String fullname;
+        public int points;
+
+        public int action;
+
+        @Override
+        public String toString() {
+            return String.format( "%s, %s, %s, %s, %s, %s, %s", connectionId, ID, username, password, fullname, points, action );
+        }
+    }
+
+    public static class Message {
+        public String msg;
+        public Message() {}
+        public Message( String msg ) {
+            this.msg = msg;
+        }
     }
 
     public static class MatchInfo {

@@ -107,11 +107,15 @@ public class Spell extends Entity {
             } );
         }
 
-        super.act(delta);
+        super.act( delta );
+    }
+
+    public void superAct( float delta ) {
+        super.act( delta );
     }
     
     @Override
-    public void draw( Batch batch, float parentAlpha) {
+    public void draw( Batch batch, float parentAlpha ) {
         batch.draw( spellAnimation.getKeyFrame( deltaTime ), getX() - getWidth(), getY() - getHeight(), getWidth() * 2, getHeight() * 2 );
         //label.draw( batch, parentAlpha );
     }

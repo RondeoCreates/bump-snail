@@ -102,8 +102,9 @@ TextButtonStyle: {
 TextFieldStyle: {
 	default: {
 		font: font
-		fontColor: white
-		cursor: cursor
+		fontColor: black
+		background: select-overlay
+		cursor: black-tint
 		selection: selection
 	}
 	number: {
