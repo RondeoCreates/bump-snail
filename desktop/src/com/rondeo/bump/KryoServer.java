@@ -3,6 +3,7 @@ package com.rondeo.bump;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
@@ -24,20 +25,24 @@ public class KryoServer extends DatabaseController {
 	public KryoServer () throws IOException, SQLException {
         server = new Server();
         server.start();
-        server.bind( 80, 80 );
+        server.bind( 54555, 54777 );
 
         kryo = server.getKryo();
         Network.register( kryo );
         
         server.addListener( new Listener() {
+            Iterator<MatchDefinition> iterator;
             public void received( Connection connection, Object object ) {
                 // find match
                 if( object instanceof FindMatch ) {
                     boolean connected = false;
                     FindMatch tempMatch;
                     // Iterate through pending matches to find connection
-                    for ( MatchDefinition matchDefinition : matches ) {
-                        if( matchDefinition.connectionIdA == -1 && matchDefinition.connectionIdB != -1 && matchDefinition.connectionIdB != connection.getID() ) {
+                    iterator = matches.iterator();
+                    while ( iterator.hasNext() ) {
+                        MatchDefinition matchDefinition = iterator.next();
+                        /*if( matchDefinition.connectionIdA == -1 && matchDefinition.connectionIdB != -1 && matchDefinition.connectionIdB != connection.getID() ) {
+
                             matchDefinition.connectionIdA = connection.getID();
 
                             tempMatch = new FindMatch();
@@ -51,8 +56,22 @@ public class KryoServer extends DatabaseController {
                             connected = true;
                             matches.remove( matchDefinition );
                             break;
-                        }
+                        }*/
                         if( matchDefinition.connectionIdB == -1 && matchDefinition.connectionIdA != -1 && matchDefinition.connectionIdA != connection.getID() ) {
+                            
+                            boolean expired = true;
+                            for( Connection conn : server.getConnections() ) {
+                                if( conn.getID() == matchDefinition.connectionIdA ) {
+                                    expired = false;
+                                    break;
+                                }
+                            }
+                            if( expired ) {
+                                //matches.remove( matchDefinition );
+                                iterator.remove();
+                                continue;
+                            }
+
                             matchDefinition.connectionIdB = connection.getID();
                             
                             tempMatch = new FindMatch();
@@ -64,7 +83,8 @@ public class KryoServer extends DatabaseController {
                             connection.sendTCP( tempMatch );
 
                             connected = true;
-                            matches.remove( matchDefinition );
+                            //matches.remove( matchDefinition );
+                            iterator.remove();
                             break;
                         }
                     }

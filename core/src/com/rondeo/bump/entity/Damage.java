@@ -11,8 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class Damage extends Spell {
 
-    public Damage(World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean target, Skin skin, int manaConsumption) {
-        super(world, x, y, width, height, flip, animation, power, target, skin, manaConsumption);
+    public Damage( int index, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean target, Skin skin, int manaConsumption) {
+        super( index, world, x, y, width, height, flip, animation, power, target, skin, manaConsumption);
     }
 
     @Override

@@ -85,7 +85,7 @@ public class MatchFinderScreen extends ScreenAdapter {
                 //try {
                 //    client.connect( 5000, client.discoverHost( 80, 5000 ), 80, 80 );
                 //} catch( Exception e ) {
-                    client.connect( 5 * 1000, "97.74.80.16", 80, 80 );
+                    client.connect( 5 * 1000, "97.74.80.16", 54555 , 54777 );
                 //}
 
                 Kryo kryo = client.getKryo();
@@ -105,7 +105,7 @@ public class MatchFinderScreen extends ScreenAdapter {
                                 @Override
                                 public void run() {
                                     try {
-                                        game.setScreen( new MultiplayerScreen( client, opponentId ) );
+                                        game.setScreen( new MultiplayerScreen( game, client, opponentId ) );
                                     } catch( IOException e ) {
                                         e.printStackTrace();
                                     }

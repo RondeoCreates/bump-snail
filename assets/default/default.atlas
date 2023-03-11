@@ -6,7 +6,7 @@ filter: Linear, Linear
 repeat: none
 white-pixel
   rotate: false
-  xy: 69, 100
+  xy: 583, 1006
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
@@ -74,6 +74,14 @@ font-export
   orig: 119, 120
   offset: 0, 0
   index: -1
+red_indicator
+  rotate: false
+  xy: 69, 69
+  size: 32, 32
+  split: 1, 1, 1, 1
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
 secondary_btn_dwn
   rotate: false
   xy: 35, 69
@@ -105,6 +113,22 @@ select-overlay
   split: 15, 15, 15, 15
   pad: 0, 33, 0, 33
   orig: 32, 32
+  offset: 0, 0
+  index: -1
+sm_progress_bar
+  rotate: false
+  xy: 515, 923
+  size: 16, 16
+  split: 4, 4, 12, 3
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+sm_progress_bg
+  rotate: false
+  xy: 549, 957
+  size: 16, 16
+  split: 3, 3, 3, 3
+  orig: 16, 16
   offset: 0, 0
   index: -1
 super_comic

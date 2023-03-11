@@ -2,7 +2,7 @@ package com.rondeo.bump;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -18,14 +18,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Null;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.rondeo.bump.util.Network;
+import com.rondeo.bump.util.SharedData;
 import com.rondeo.bump.util.Network.Account;
 
-public class LoginScreen extends ScreenAdapter {
+public class LoginScreen extends SharedData {
     Stage stage;
     Table table;
     Skin skin;
@@ -33,13 +33,15 @@ public class LoginScreen extends ScreenAdapter {
     Label message;
     
     public LoginScreen( final BumpSnail game, @Null String text ) {
+        final Preferences preferences = Gdx.app.getPreferences( "bump-snail-prefs" );
+
         client = new Client();
         client.start();
         //try {
         //    client.connect( 5000, client.discoverHost( 80, 5000 ), 80, 80 );
         //} catch( Exception e ) {
             try {
-                client.connect( 5 * 1000, "97.74.80.16", 80, 80 );
+                client.connect( 5 * 1000, "97.74.80.16", 54555 , 54777 );
             } catch( Exception ex ) {
                 // Show message or something
             }
@@ -56,10 +58,10 @@ public class LoginScreen extends ScreenAdapter {
                         Gdx.app.postRunnable( new Runnable() {
                             @Override
                             public void run() {
-                                Preferences preferences = Gdx.app.getPreferences( "bump-snail-prefs" );
                                 preferences.putInteger( "ID", account.ID );
                                 preferences.putString( "username", account.username );
                                 preferences.putString( "fullname", account.fullname );
+                                preferences.putString( "password", account.password );
                                 preferences.putInteger( "points", account.points );
                                 preferences.flush();
                                 table.addAction( Actions.sequence( Actions.moveBy( 500, 0, .3f ), new Action() {
@@ -94,6 +96,7 @@ public class LoginScreen extends ScreenAdapter {
         stage.addActor( table );
 
         message = new Label( text, skin.get( "small", LabelStyle.class ) );
+        message.setColor( Color.BLACK );
         message.setAlignment( Align.center );
 
         userField = new TextField( "", skin );
@@ -105,22 +108,22 @@ public class LoginScreen extends ScreenAdapter {
         TextButton loginButton = new TextButton( "LOG IN", skin );
         //loginButton.pad( 15 );
         loginButton.addListener( new InputListener() {
-            public boolean touchDown( InputEvent event, float x, float y, int pointer, int button ) {
+            public void touchUp( InputEvent event, float x, float y, int pointer, int button ) {
                 String username = userField.getText();
-                String password = passField.getText();
+                String password = hash( passField.getText() );
                 try {
-                    connectServer( game, username, password );
+                    connectServer( username, password );
                 } catch ( Exception e ) {
                     e.printStackTrace();
                 }
-                return true;
             };
+            public boolean touchDown( InputEvent event, float x, float y, int pointer, int button ) { return true; };
         } );
 
         TextButton regButton = new TextButton( "REGISTER", skin.get( "secondary", TextButtonStyle.class ) );
         //regButton.pad( 15 );
         regButton.addListener( new InputListener() {
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp( InputEvent event, float x, float y, int pointer, int button ) {
                 table.addAction( Actions.sequence( Actions.moveBy( 500, 0, .3f ), new Action() {
                     @Override
                     public boolean act(float delta) {
@@ -128,8 +131,8 @@ public class LoginScreen extends ScreenAdapter {
                         return true;
                     }
                 } ) );
-                return true;
             };
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) { return true; };
         } );
 
         table.add().width( 300 );
@@ -142,24 +145,21 @@ public class LoginScreen extends ScreenAdapter {
         table.row();
         table.add( loginButton ).fill().pad( 10 );
         table.row();
-        table.add( new Label( "or", skin.get( "small", LabelStyle.class ) ) );
+        Label orLabel = new Label( "or", skin.get( "small", LabelStyle.class ) );
+        orLabel.setColor( Color.BLACK );
+        table.add( orLabel );
         table.row();
         table.add( regButton ).fill().pad( 10 );
 
         Gdx.input.setInputProcessor( stage );
-    }
 
-    Client client;
-    Kryo kryo;
-    public void connectServer( final BumpSnail game, String username, String password ) throws Exception {
-        
-        Account account = new Account();
-        account.connectionId = client.getID();
-        account.username = username;
-        account.password = password;
-        account.action = 1;
-        client.sendTCP( account );
-        
+        if( preferences.contains( "username" ) && preferences.contains( "password" ) ) {
+            try {
+                connectServer( preferences.getString( "username" ), preferences.getString( "password" ) );
+            } catch ( Exception e ) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -181,6 +181,7 @@ public class LoginScreen extends ScreenAdapter {
     public void dispose() {
         stage.dispose();
         skin.dispose();
+        client.close();
 
         super.dispose();
     }

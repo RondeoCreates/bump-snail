@@ -55,6 +55,7 @@ public class DatabaseController {
             Account account = new Account();
             account.ID = results.getInt( "ID" );
             account.username = results.getString( "username" );
+            account.password = results.getString( "password" );
             account.fullname = results.getString( "fullname" );
             account.points = results.getInt( "points" );
             //System.out.println( account );
@@ -64,9 +65,9 @@ public class DatabaseController {
     }
 
     public Account updatePoints( int ID, int points ) throws SQLException {
-        String sql = String.format( "UPDATE users SET points = %i WHERE ID = %i", points, ID );
+        String sql = String.format( "UPDATE users SET points = %s WHERE ID = %s", points, ID );
         if( statement.executeUpdate( sql ) > 0 ) {
-            sql = String.format( "SELECT * FROM users WHERE ID = %i", ID );
+            sql = String.format( "SELECT * FROM users WHERE ID = %s", ID );
             ResultSet results = statement.executeQuery( sql );
             while( results.next() ) {
                 Account account = new Account();

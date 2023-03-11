@@ -4,7 +4,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.esotericsoftware.kryonet.Client;
 
 public class MatchInfoController {
+    public int ID;
     public int points = 0;
+    public int overallPoints = 0;
+    public String username = "";
     private Client client;
     private int opponentId;
     private Label myPointsLabel;
@@ -23,11 +26,13 @@ public class MatchInfoController {
         Network.MatchInfo matchInfo = new Network.MatchInfo();
         matchInfo.opponentId = opponentId;
         matchInfo.points = points;
+        matchInfo.overallPoints = overallPoints;
+        matchInfo.username = username;
 
         client.sendTCP( matchInfo );
         if( myPointsLabel == null )
             return;
-        myPointsLabel.setText( points );
+        myPointsLabel.setText( points + "POINTS" );
     }
 
 }

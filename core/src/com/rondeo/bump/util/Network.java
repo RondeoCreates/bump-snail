@@ -60,6 +60,8 @@ public class Network {
     public static class MatchInfo {
         public int points = 0;
         public int opponentId = -1;
+        public String username = "";
+        public int overallPoints = 0;
     }
 
     public static class MatchDefinition {

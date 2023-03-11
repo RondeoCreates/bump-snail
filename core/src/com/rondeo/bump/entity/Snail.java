@@ -12,7 +12,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar.ProgressBarStyle;
@@ -31,11 +30,10 @@ public class Snail extends Entity {
     boolean log;
     boolean animate = true;
     boolean isDead;
-    float deltaTime;
+    float deltaTime, clockTime;
 
-    Animation<TextureRegion> walkAnimation;
-
-    Label label;
+    Animation<TextureRegion> walkAnimation, clockAnimation;
+    
     public String referenceName;
     float width, height;
 
@@ -43,7 +41,8 @@ public class Snail extends Entity {
 
     ProgressBar healthBar;
 
-    public Snail( MatchInfoController matchInfoController, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean log, Skin skin, int manaConsumption ) {
+    public Snail( int index, MatchInfoController matchInfoController, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, TextureRegion[] cAnimation, int power, boolean log, Skin skin, int manaConsumption ) {
+        this.index = index;
         this.matchInfoController = matchInfoController;
         this.world = world;
         this.flip = flip;
@@ -62,15 +61,19 @@ public class Snail extends Entity {
 
         walkAnimation = new Animation<TextureRegion>( 0.14f, animation );
         walkAnimation.setPlayMode( PlayMode.LOOP );
-        label = new Label( String.valueOf( power ), skin );
+        clockAnimation = new Animation<TextureRegion>( 0.14f, cAnimation );
+        clockAnimation.setPlayMode( PlayMode.LOOP );
 
         healthBar = new ProgressBar( 0, health, 1, false, skin.get( "red-horizontal", ProgressBarStyle.class) );
     }
 
+    long dropTime;
+
     @Override
     public void pack() {
-        if( body == null )
-            body = createBody( getX(), getY(), getWidth(), getHeight() );
+        if( body == null ) {
+            dropTime = System.currentTimeMillis();
+        }
     }
 
     private Body createBody( float cx, float cy, float hw, float hh ) {
@@ -110,7 +113,10 @@ public class Snail extends Entity {
 
     @Override
     public void act(float delta) {
-        if( delta == 0 )
+        clockTime += delta;
+        if( System.currentTimeMillis() > dropTime + 1000 && body == null )
+            body = createBody( getX(), getY(), getWidth(), getHeight() );
+        if( delta == 0 || System.currentTimeMillis() < dropTime + 1000 || body == null  )
             return;
 
         lastPosition.set( getX(), getY() );
@@ -134,9 +140,6 @@ public class Snail extends Entity {
             deltaTime += delta;
 
         lastPosition.set( getX(), getY() );
-
-        label.setPosition( getX(), getY() );
-        label.setText( String.valueOf( power ) );
         
         super.act( delta );
 
@@ -168,11 +171,14 @@ public class Snail extends Entity {
             getY(), 
             flip ? - getWidth() - ( 20 + scale*power) : getWidth() + ( 20 + scale*power), 
             getHeight() + ( 20 + scale*power) );
-        //label.draw( batch, parentAlpha );
 
         if( health < maxHealth ) {
             healthBar.setValue( health );
             healthBar.draw( batch, parentAlpha );
+        }
+
+        if( System.currentTimeMillis() < dropTime + 1000 ) {
+            batch.draw( clockAnimation.getKeyFrame( clockTime ), getX(), getY(), 32, 32 );
         }
     }
 

@@ -8,11 +8,13 @@ import java.util.concurrent.TimeUnit;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -34,12 +36,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryonet.Client;
 import com.rondeo.bump.components.Cards;
@@ -49,6 +53,8 @@ import com.rondeo.bump.entity.Snail;
 import com.rondeo.bump.entity.Spell;
 import com.rondeo.bump.util.DatabaseController;
 import com.rondeo.bump.util.MatchInfoController;
+import com.rondeo.bump.util.Rumble;
+import com.rondeo.bump.util.Network.Account;
 import com.rondeo.bump.util.Network.Position;
 
 public class MultiplayerScreen extends DatabaseController {
@@ -61,14 +67,18 @@ public class MultiplayerScreen extends DatabaseController {
     OrthographicCamera camera;
     int vWidth = 1000, vHeight = 500;
     InputMultiplexer inputMultiplexer;
-    MatchInfoController matchInfoController;
     TextureAtlas assets;
     Texture terrainTexture, cloudTexture;
 
-    public MultiplayerScreen( Client client, int opponentId ) throws IOException {
-        super( client, opponentId );
+    BumpSnail game;
+    Preferences preferences;
 
-        matchInfoController = new MatchInfoController( client, opponentId );
+    public MultiplayerScreen( BumpSnail game, Client client, int opponentId, String opponentUsername ) throws IOException {
+        super( client, opponentId, new MatchInfoController( client, opponentId ) );
+        this.game = game;
+
+        preferences = Gdx.app.getPreferences( "bump-snail-prefs" );
+        connectServer( game, preferences.getString( "username" ), preferences.getString( "password" ) );
 
         assets = new TextureAtlas( Gdx.files.internal( "assets.atlas" ) );
         cardTexture = new Texture( Gdx.files.internal( "cards.png" ) );
@@ -90,7 +100,8 @@ public class MultiplayerScreen extends DatabaseController {
                         if( tempDamage.target == tempSnail.flip ) {
                             tempSnail.health += tempDamage.power;
                             tempSnail.checkDeath();
-                            //System.out.println( tempSnail.health );
+                            // Screen shake
+                            Rumble.rumble( 5f, 1f );
                         }
                     } else {
                         tempSpell = (Spell) ( !contact.getFixtureA().isSensor() ? contact.getFixtureB().getBody().getUserData() : contact.getFixtureA().getBody().getUserData() );
@@ -150,6 +161,15 @@ public class MultiplayerScreen extends DatabaseController {
 
         debugRenderer = new Box2DDebugRenderer();
     }
+
+    public void connectServer( final BumpSnail game, String username, String password ) throws IOException {
+        Account account = new Account();
+        account.connectionId = client.getID();
+        account.username = username;
+        account.password = password;
+        account.action = 1;
+        client.sendTCP( account );
+    }
     
     // HUD
     Stage hud;
@@ -159,12 +179,14 @@ public class MultiplayerScreen extends DatabaseController {
     ProgressBar manaProgressA;
     Label label, timerLabel;
     Timer timer;
-    Label myPointsLabel, oppPointsLabel;
+    Label myPointsLabel, oppPointsLabel, myNameLabel, oppNameLabel;
 
     @Override
     public void show() {
+        playTheme2();
+
         hud = new Stage( new ExtendViewport( vWidth, vHeight ) );
-        skin = new Skin( Gdx.files.internal( "ui/terra-mother-ui.json" ) );
+        skin = new Skin( Gdx.files.internal( "default/default.json" ) );
 
         // Setup table
         table = new Table( skin );
@@ -172,7 +194,8 @@ public class MultiplayerScreen extends DatabaseController {
         hud.addActor( table );
         
         // Time
-        timerLabel = new Label( "Time Left: "+String.valueOf( TIMELIMIT ), skin );
+        timerLabel = new Label( "", skin.get( "small", LabelStyle.class ) );
+        timerLabel.setAlignment( Align.center );
         table.row();
         table.add();
         table.add( timerLabel );
@@ -180,8 +203,7 @@ public class MultiplayerScreen extends DatabaseController {
         
         // Other UI
         table.row();
-        LabelStyle labelStyle = new LabelStyle( skin.getFont( "giygas" ), Color.WHITE );
-        label = new Label( "ready", labelStyle );
+        label = new Label( "READY", skin );
         table.add();
         table.add( label ).expandY();
         table.add();
@@ -190,11 +212,19 @@ public class MultiplayerScreen extends DatabaseController {
         table.row();
 
         cardSlotA = new Table( skin );
-        cardSlotA.setBackground( new NinePatchDrawable( skin.getPatch( "flat-slot" ) ) );
+        cardSlotA.setBackground( new NinePatchDrawable( skin.getPatch( "default_window" ) ) );
         cardSlotA.pad( 5 );
-        table.add( myPointsLabel = labelPoints( myPointsLabel ) ).fill().minWidth( 200 );;
+        VerticalGroup vGroup;
+        vGroup = new VerticalGroup();
+        vGroup.addActor( myPointsLabel = labelPoints( myPointsLabel ) );
+        vGroup.addActor( myNameLabel = labelName( myNameLabel ) );
+        table.add( vGroup ).fill().minWidth( 200 );;
         table.add( cardSlotA );
-        table.add( oppPointsLabel = labelPoints( oppPointsLabel ) ).fill().minWidth( 200 );
+        vGroup = new VerticalGroup();
+        vGroup.addActor( oppPointsLabel = labelPoints( oppPointsLabel ) );
+        vGroup.addActor( oppNameLabel = labelName( oppNameLabel ) );
+        table.add( vGroup ).fill().minWidth( 200 );
+
         matchInfoController.setLabel( myPointsLabel );
 
         init();
@@ -220,16 +250,19 @@ public class MultiplayerScreen extends DatabaseController {
                     STARTTIME --;
                     switch( STARTTIME ) {
                         case 3:
-                            label.setText( "ready" );
-                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
+                            label.setText( "READY" );
+                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            playCountdownA();
                             break;
                         case 2:
-                            label.setText( "set" );
-                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
+                            label.setText( "SET" );
+                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            playCountdownA();
                             break;
                         case 1:
                             label.setText( "BUMP!" );
-                            //label.addAction( Actions.scaleBy( 1.2f, 1.2f, 1000 ) );
+                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            playCountdownB();
                             break;
                         default:
                             label.setText( "" );
@@ -240,11 +273,7 @@ public class MultiplayerScreen extends DatabaseController {
 
         // Setup label and fill bar for mana
         manaTexture = new Texture( Gdx.files.internal( "mana.png" ) );
-        TextButtonStyle manaStyle = new TextButtonStyle( new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), skin.getFont( "font" ) );
-        //ProgressBarStyle progressBarStyle = new ProgressBarStyle( skin.getDrawable( "black-tint" ), skin.getDrawable( "purple-tint" ) );
-        //progressBarStyle.background.setMinHeight( 16 );
-        //progressBarStyle.knob.setMinHeight( 12 );
-        //progressBarStyle.knobBefore = progressBarStyle.knob;
+        TextButtonStyle manaStyle = new TextButtonStyle( new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), new TextureRegionDrawable( manaTexture ), skin.getFont( "font-export" ) );
 
         manaLabelA = new TextButton( String.valueOf( manaA ), manaStyle );
         manaLabelA.pad( 2, 10, 0, 10 );
@@ -256,7 +285,7 @@ public class MultiplayerScreen extends DatabaseController {
         Table manaTable;
 
         manaTable = new Table( skin );
-        manaTable.setBackground( new NinePatchDrawable( skin.getPatch( "flat-slot" ) ) );
+        manaTable.setBackground( new NinePatchDrawable( skin.getPatch( "default_window" ) ) );
         manaTable.pad( 5 );
         manaTable.add( manaLabelA );
         manaTable.add( manaProgressA ).fill().expand();
@@ -266,19 +295,41 @@ public class MultiplayerScreen extends DatabaseController {
         table.add();
 
         //hud.setDebugAll( true );
+        initForeground();
     }
 
     public Label labelPoints( Label label ) {
-        LabelStyle labelStyle = new LabelStyle( skin.getFont( "giygas" ), Color.WHITE );
-        label = new Label( "0" , labelStyle );
+        label = new Label( "0" , skin );
+        label.setAlignment( Align.center );
+        return label;
+    }
+    
+    public Label labelName( Label label ) {
+        label = new Label( "0" , skin.get( "small", LabelStyle.class ) );
         label.setAlignment( Align.center );
         return label;
     }
 
+    //int myPointsI = 0, oppPointsI = 0;
+    String myNameS = "", oppNameS = "";
+    
     @Override
     public void updateOpponentInfo( int points ) {
         oppPointsLabel.setText( points );
     }
+
+    /*@Override
+    public void setOpponentInfo(String username, int points) {
+        oppPointsI = points;
+        oppNameS = username;
+        oppNameLabel.setText( username );
+    }*/
+
+    /*@Override
+    public void setMyInfo( String username, int points ) {
+        myPointsI = points;
+        myNameS = username;
+    }*/
 
     Cards cards;
     Entity readyA, readyB;
@@ -292,13 +343,13 @@ public class MultiplayerScreen extends DatabaseController {
     public void placeOpponent( final float x, final float y, int index ) {
         switch( cards.getType( index ) ) {
             case Cards.SNAIL:
-                readyB = new Snail( matchInfoController, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                readyB = new Snail( index, matchInfoController, world, vWidth -25, 0, 25, 25, true, cards.getAnimation( assets, 24, 24, index  ), assets.findRegions( "clock" ).toArray(), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
             break;
             case Cards.SPELL:
-                readyB = new Spell( world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+                readyB = new Spell( index, world, 0, 0, 150, 50, true, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
             break;
             case Cards.DMG:
-                readyB = new Damage( world, 0, 0, 50, 50, true, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
+                readyB = new Damage( index, world, 0, 0, 50, 50, true, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? false : true, skin, cards.getManaConsumption( index ) );
             break;
         }
         Gdx.app.postRunnable( new Runnable() {
@@ -325,22 +376,32 @@ public class MultiplayerScreen extends DatabaseController {
         stage.addListener( new InputListener() {
             float touchX, touchY;
             Entity entity;
-            Image indicator;
+            Image indicator, redIndicator;
             {
                 indicator = new Image( skin.getDrawable( "select-overlay" ) );
                 indicator.setVisible( false );
-                stage.addActor( indicator );
                 indicator.setSize( 100, 100 );
+                stage.addActor( indicator );
+
+                redIndicator = new Image( skin.getDrawable( "red_indicator" ) );
+                redIndicator.setVisible( false );
+                redIndicator.setBounds( vWidth/2, 0, vWidth/2, vHeight );
+                redIndicator.addAction( Actions.forever( Actions.sequence( Actions.alpha( .3f, .15f ), Actions.alpha( 1f, .15f ) ) ) );
+                stage.addActor( redIndicator );
             }
 
             @Override
             public boolean touchDown( InputEvent event, float x, float y, int pointer, int button ) {
+                if( !started || end )
+                    return false;
                 // Show indicator
                 if( x > 0 && x < vWidth && y > 0 && y < vHeight ) {
                     indicator.setVisible( true );
                     indicator.setPosition( x - x%100, y - y%100 );
                     indicator.setSize( 100, 100 );
                     if( readyA != null || readyB != null ) {
+                        if( ((readyA == null ? readyB : readyA) instanceof Snail) )
+                            redIndicator.setVisible( true );
                         if( !((readyA == null ? readyB : readyA) instanceof Damage) && (readyA == null ? readyB : readyA) instanceof Spell ) {
                             indicator.setPosition( (x - x%100) - 100, y - y%100 );
                             indicator.setSize( 300, 100 );
@@ -349,16 +410,21 @@ public class MultiplayerScreen extends DatabaseController {
                     return true;
                 } else {
                     indicator.setVisible( false );
+                    redIndicator.setVisible( false );
                 }
                 return false;
             };
 
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                if( !started || end )
+                    return;
                 if( x > 0 && x < vWidth && y > 0 && y < vHeight ) {
                     indicator.setVisible( true );
                     indicator.setPosition( x - x%100, y - y%100 );
                     indicator.setSize( 100, 100 );
                     if( readyA != null || readyB != null ) {
+                        if( ((readyA == null ? readyB : readyA) instanceof Snail) )
+                            redIndicator.setVisible( true );
                         if( !((readyA == null ? readyB : readyA) instanceof Damage) && (readyA == null ? readyB : readyA) instanceof Spell ) {
                             indicator.setPosition( (x - x%100) - 100, y - y%100 );
                             indicator.setSize( 300, 100 );
@@ -366,15 +432,19 @@ public class MultiplayerScreen extends DatabaseController {
                     }
                 } else {
                     indicator.setVisible( false );
+                    redIndicator.setVisible( false );
                 }
             };
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if( !started || end )
+                    return; 
                 // hide indicator
                 if( x < 0 || x > vWidth || y < 0 || y > vHeight )
                     return;
                 indicator.setVisible( false );
+                redIndicator.setVisible( false );
                 touchY = y;
                 touchY = Math.max( 0, touchY );
                 touchY = Math.min( vHeight - 1, touchY );
@@ -401,6 +471,7 @@ public class MultiplayerScreen extends DatabaseController {
                 tempCellA = cardSlotA.getCell( cardSlotA.findActor( refStringA ) );
                 cardSlotA.findActor( refStringA ).remove();
                 refStringA = null;
+                slotIndices.removeValue( entity.index, true );
                 addCardA();
 
                 // Send position to oponent
@@ -416,8 +487,21 @@ public class MultiplayerScreen extends DatabaseController {
         }
     }
 
+    Array<Integer> slotIndices = new Array<>();
+
     public void addCardA() {
-        final int index = random.nextInt( 8 );
+
+        int tempIndex2 = -1;
+        while( true ) {
+            int tempIndex1 = random.nextInt( 8 );
+            if( !slotIndices.contains( tempIndex1, true ) ) {
+                slotIndices.add( tempIndex1 );
+                tempIndex2 = tempIndex1;
+                break;
+            }
+        }
+        final int index = tempIndex2;
+        
         final Image cardImage = cards.getCard( index, null );
         cardImage.setName( String.valueOf( random.nextInt( 999999 ) ) );
         cardImage.addListener( new ClickListener() {
@@ -428,15 +512,15 @@ public class MultiplayerScreen extends DatabaseController {
                 refStringA = cardImage.getName();
                 switch( cards.getType( index ) ) {
                     case Cards.SNAIL:
-                        readyA = new Snail( matchInfoController, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
+                        readyA = new Snail( index, matchInfoController, world, 25, 0, 25, 25, false, cards.getAnimation( assets, 24, 24, index  ), assets.findRegions( "clock" ).toArray(), cards.getPower( index ), false, skin, cards.getManaConsumption( index ) );
                         readyPosition = new Position( opponentId, 25, 0, index );
                     break;
                     case Cards.SPELL:
-                        readyA = new Spell( world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
+                        readyA = new Spell( index, world, 0, 0, 150, 50, false, cards.getAnimation( assets, 150, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
                         readyPosition = new Position( opponentId, 0, 0, index );
                     break;
                     case Cards.DMG:
-                        readyA = new Damage( world, 0, 0, 50, 50, false, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
+                        readyA = new Damage( index, world, 0, 0, 50, 50, false, cards.getAnimation( assets, 50, 50, index  ), cards.getPower( index ), cards.getPower( index ) < 0 ? true : false, skin, cards.getManaConsumption( index ) );
                         readyPosition = new Position( opponentId, 0, 0, index );
                     break;
                 }
@@ -451,17 +535,75 @@ public class MultiplayerScreen extends DatabaseController {
         cardSlotA.add( cardImage ).size( 80 ).pad( 1 );
     }
 
+    // Foregrounds
+    Stage postStage;
+    Table postTable;
+    Label oppScore, oppName, //oppPoints,
+        myScore, myName; //myPoints;
+    public void initForeground() {
+        postStage = new Stage( new ExtendViewport( vWidth, vHeight ) );
+        postTable = new Table( skin );
+        postTable.setFillParent( true );
+        postStage.addActor( postTable );
+
+        oppScore = new Label( "0", skin.get( "big", LabelStyle.class ) );
+        //oppPoints = new Label( "0", skin );
+        oppName = new Label( "@default", skin.get( "small", LabelStyle.class ) );
+
+        myScore = new Label( "0", skin.get( "big", LabelStyle.class ) );
+        //myPoints = new Label( "0", skin );
+        myName = new Label( "@default", skin.get( "small", LabelStyle.class ) );
+
+        postTable.add( oppScore );
+        //postTable.row();
+        //postTable.add( oppPoints );
+        postTable.row();
+        postTable.add( oppName );
+
+        Label vsLabel = new Label( "VS", skin );
+        postTable.row();
+        postTable.add( vsLabel ).pad( 20 );
+
+        postTable.row();
+        postTable.add( myScore );
+        //postTable.row();
+        //postTable.add( myPoints );
+        postTable.row();
+        postTable.add( myName );
+
+        postTable.row();
+        postTable.add().pad( 20 );
+
+        TextButton homeButton = new TextButton( "HOME", skin.get( "secondary", TextButtonStyle.class ) );
+        homeButton.addListener( new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) { return true; };
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                game.setScreen( new MenuScreen( game ) );
+            };
+        } );
+        postTable.row();
+        postTable.add( homeButton );
+
+        postTable.setBackground( skin.getDrawable( "semi_trans_black" ) );
+
+        inputMultiplexer.addProcessor( postStage );
+    }
+
     // Timers
     int TIMELIMIT = 60 * 3;
     int STARTTIME = 4;
     boolean started = false;
+    boolean end = false;
+
+    Vector2 cameraPosition = new Vector2();
 
     @Override
     public void render(float delta) {
-        stage.act( delta );
+        if( !end )
+            stage.act( delta );
         stage.draw();
 
-        if( started )
+        if( started && !end )
             hud.act( delta );
         hud.draw();
 
@@ -475,16 +617,45 @@ public class MultiplayerScreen extends DatabaseController {
         if( started ) {
             if( TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) > TIMELIMIT ) {
                 // End Match
+                if( !end ) {
+                    //oppPoints.setText( oppPointsI + " POINTS" );
+                    oppName.setText( "@" + oppNameS );
+                    //myPoints.setText( myPointsI + " POINTS" );
+                    myName.setText( "@" + myNameS );
+
+                    Account account = new Account();
+                    account.ID = preferences.getInteger( "ID" );
+                    account.points = preferences.getInteger( "points" ) + matchInfoController.points;
+                    account.action = 2;
+                    System.out.println( account );
+                    client.sendTCP( account );
+                    
+                    end = true;
+                }
+                postStage.act();
+                postStage.draw();
+                oppScore.setText( oppPointsLabel.getText() );
+                myScore.setText( myPointsLabel.getText() );
             } else {
-                timerLabel.setText( ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) / 60 + ":" + ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) % 60 );
+                timerLabel.setText( String.format( "Time\n%d:%02d", ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) / 60, ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) % 60 ) );
             }
+        }
+
+        // Screenshakes
+        cameraPosition.set( MathUtils.lerp( camera.position.x, camera.viewportWidth/2, Gdx.graphics.getDeltaTime() * 2f ), MathUtils.lerp( camera.position.y, (camera.viewportHeight/2)-100, Gdx.graphics.getDeltaTime() * 2 ) );
+        camera.position.set( cameraPosition.x, cameraPosition.y, 0 );
+        if( Rumble.getRumbleTimeLeft() > 0 ) {
+            Rumble.tick( Gdx.graphics.getDeltaTime() );
+            camera.translate( Rumble.getPos() );
         }
     }
 
     @Override
-    public void resize(int width, int height) {
-        stage.getViewport().update( width, height );
+    public void resize( int width, int height ) {
+        stage.getViewport().update( width, height, true );
         hud.getViewport().update( width, height, true );
+        postStage.getViewport().update( width, height, true );
+
         super.resize(width, height);
     }
 
@@ -492,14 +663,18 @@ public class MultiplayerScreen extends DatabaseController {
     public void dispose() {
         stage.dispose();
         hud.dispose();
+        postStage.dispose();
         skin.dispose();
         world.dispose();
+        client.close();
         
         assets.dispose();
         terrainTexture.dispose();
         cardTexture.dispose();
         manaTexture.dispose();
         timer.cancel();
+
+        super.dispose();
     }
 
     @Override

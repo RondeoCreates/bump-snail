@@ -26,19 +26,35 @@ Color: {
 	Black: {
 		hex: 000000ff
 	}
+	Black_Trans: {
+		hex: 000000a0
+	}
 	Cyan: {
 		hex: b5fcffff
+	}
+	Red: {
+		hex: ff0000ff
 	}
 	White: {
 		hex: ffffffff
 	}
 }
 TintedDrawable: {
+	red_sm_progress_bar: {
+		name: sm_progress_bar
+		color: Red
+	}
 	cursor: {
 		name: white-pixel
 		color: Black
 		minWidth: 1
 		minHeight: 30
+	}
+	semi_trans_black: {
+		name: white-pixel
+		color: Black_Trans
+		minWidth: 1
+		minHeight: 1
 	}
 }
 ImageTextButtonStyle: {
@@ -65,13 +81,16 @@ LabelStyle: {
 	}
 	small: {
 		font: font-export
-		fontColor: Black
 	}
 }
 ProgressBarStyle: {
 	default-horizontal: {
-		background: default_progress_bg
-		knobBefore: default_progress_bar
+		background: sm_progress_bg
+		knobBefore: sm_progress_bar
+	}
+	red-horizontal: {
+		background: sm_progress_bg
+		knobBefore: red_sm_progress_bar
 	}
 }
 TextButtonStyle: {

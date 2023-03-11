@@ -30,7 +30,8 @@ public class Spell extends Entity {
     public String referenceName;
     float width, height;
 
-    public Spell( World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean target, Skin skin, int manaConsumption ) {
+    public Spell( int index, World world, float x, float y, float width, float height, boolean flip, TextureRegion[] animation, int power, boolean target, Skin skin, int manaConsumption ) {
+        this.index = index;
         this.world = world;
         this.flip = flip;
         this.power = power;
