@@ -1,5 +1,6 @@
 package com.rondeo.bump.util;
 
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.esotericsoftware.kryonet.Client;
 
@@ -32,7 +33,8 @@ public class MatchInfoController {
         client.sendTCP( matchInfo );
         if( myPointsLabel == null )
             return;
-        myPointsLabel.setText( points + "POINTS" );
+        myPointsLabel.setText( points + " POINTS");
+        myPointsLabel.addAction( Actions.scaleBy( .5f, .5f, .3f ) );
     }
 
 }

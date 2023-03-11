@@ -46,6 +46,10 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryonet.Client;
+import com.github.tommyettinger.textra.TextraLabel;
+import com.github.tommyettinger.textra.TypingConfig;
+import com.github.tommyettinger.textra.TypingLabel;
+import com.github.tommyettinger.textra.effects.HeartbeatEffect;
 import com.rondeo.bump.components.Cards;
 import com.rondeo.bump.entity.Damage;
 import com.rondeo.bump.entity.Entity;
@@ -73,9 +77,11 @@ public class MultiplayerScreen extends DatabaseController {
     BumpSnail game;
     Preferences preferences;
 
-    public MultiplayerScreen( BumpSnail game, Client client, int opponentId, String opponentUsername ) throws IOException {
+    public MultiplayerScreen( BumpSnail game, Client client, int opponentId, String opponentUsername, String myUsername ) throws IOException {
         super( client, opponentId, new MatchInfoController( client, opponentId ) );
         this.game = game;
+        this.oppNameS = opponentUsername;
+        this.myNameS = myUsername;
 
         preferences = Gdx.app.getPreferences( "bump-snail-prefs" );
         connectServer( game, preferences.getString( "username" ), preferences.getString( "password" ) );
@@ -177,7 +183,8 @@ public class MultiplayerScreen extends DatabaseController {
     Texture cardTexture, manaTexture;
     TextButton manaLabelA;
     ProgressBar manaProgressA;
-    Label label, timerLabel;
+    TypingLabel label;
+    Label timerLabel;
     Timer timer;
     Label myPointsLabel, oppPointsLabel, myNameLabel, oppNameLabel;
 
@@ -203,7 +210,8 @@ public class MultiplayerScreen extends DatabaseController {
         
         // Other UI
         table.row();
-        label = new Label( "READY", skin );
+        TypingConfig.registerEffect( "HEARTBEAT", "ENDHEARTBEAT", HeartbeatEffect.class );
+        label = new TypingLabel( "{HEARTBEAT=1.0;0.5}READY{ENDHEARTBEAT}", skin );
         table.add();
         table.add( label ).expandY();
         table.add();
@@ -217,12 +225,12 @@ public class MultiplayerScreen extends DatabaseController {
         VerticalGroup vGroup;
         vGroup = new VerticalGroup();
         vGroup.addActor( myPointsLabel = labelPoints( myPointsLabel ) );
-        vGroup.addActor( myNameLabel = labelName( myNameLabel ) );
+        vGroup.addActor( myNameLabel = labelName( myNameLabel, myNameS ) );
         table.add( vGroup ).fill().minWidth( 200 );;
         table.add( cardSlotA );
         vGroup = new VerticalGroup();
         vGroup.addActor( oppPointsLabel = labelPoints( oppPointsLabel ) );
-        vGroup.addActor( oppNameLabel = labelName( oppNameLabel ) );
+        vGroup.addActor( oppNameLabel = labelName( oppNameLabel, oppNameS ) );
         table.add( vGroup ).fill().minWidth( 200 );
 
         matchInfoController.setLabel( myPointsLabel );
@@ -250,18 +258,15 @@ public class MultiplayerScreen extends DatabaseController {
                     STARTTIME --;
                     switch( STARTTIME ) {
                         case 3:
-                            label.setText( "READY" );
-                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            label.setText( "{HEARTBEAT=1.0;0.5}READY{ENDHEARTBEAT}" );
                             playCountdownA();
                             break;
                         case 2:
-                            label.setText( "SET" );
-                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            label.setText( "{HEARTBEAT=1.0;0.5}SET{ENDHEARTBEAT}" );
                             playCountdownA();
                             break;
                         case 1:
-                            label.setText( "BUMP!" );
-                            label.addAction( Actions.scaleBy( 1.3f, 1.3f, .5f ) );
+                            label.setText( "{HEARTBEAT=1.0;0.5}BUMP{ENDHEARTBEAT}" );
                             playCountdownB();
                             break;
                         default:
@@ -304,32 +309,18 @@ public class MultiplayerScreen extends DatabaseController {
         return label;
     }
     
-    public Label labelName( Label label ) {
-        label = new Label( "0" , skin.get( "small", LabelStyle.class ) );
+    public Label labelName( Label label, String data ) {
+        label = new Label( "@" + data , skin.get( "small", LabelStyle.class ) );
         label.setAlignment( Align.center );
         return label;
     }
 
-    //int myPointsI = 0, oppPointsI = 0;
     String myNameS = "", oppNameS = "";
     
     @Override
     public void updateOpponentInfo( int points ) {
-        oppPointsLabel.setText( points );
+        oppPointsLabel.setText( points + " POINTS" );
     }
-
-    /*@Override
-    public void setOpponentInfo(String username, int points) {
-        oppPointsI = points;
-        oppNameS = username;
-        oppNameLabel.setText( username );
-    }*/
-
-    /*@Override
-    public void setMyInfo( String username, int points ) {
-        myPointsI = points;
-        myNameS = username;
-    }*/
 
     Cards cards;
     Entity readyA, readyB;
@@ -538,38 +529,38 @@ public class MultiplayerScreen extends DatabaseController {
     // Foregrounds
     Stage postStage;
     Table postTable;
-    Label oppScore, oppName, //oppPoints,
-        myScore, myName; //myPoints;
+    Label oppScoreEnd, oppNameEnd, myScoreEnd, myNameEnd;
+
     public void initForeground() {
         postStage = new Stage( new ExtendViewport( vWidth, vHeight ) );
         postTable = new Table( skin );
         postTable.setFillParent( true );
         postStage.addActor( postTable );
 
-        oppScore = new Label( "0", skin.get( "big", LabelStyle.class ) );
+        oppScoreEnd = new Label( "0", skin.get( "big", LabelStyle.class ) );
         //oppPoints = new Label( "0", skin );
-        oppName = new Label( "@default", skin.get( "small", LabelStyle.class ) );
+        oppNameEnd = new Label( "@default", skin.get( "small", LabelStyle.class ) );
 
-        myScore = new Label( "0", skin.get( "big", LabelStyle.class ) );
+        myScoreEnd = new Label( "0", skin.get( "big", LabelStyle.class ) );
         //myPoints = new Label( "0", skin );
-        myName = new Label( "@default", skin.get( "small", LabelStyle.class ) );
+        myNameEnd = new Label( "@default", skin.get( "small", LabelStyle.class ) );
 
-        postTable.add( oppScore );
+        postTable.add( oppScoreEnd );
         //postTable.row();
         //postTable.add( oppPoints );
         postTable.row();
-        postTable.add( oppName );
+        postTable.add( oppNameEnd );
 
         Label vsLabel = new Label( "VS", skin );
         postTable.row();
         postTable.add( vsLabel ).pad( 20 );
 
         postTable.row();
-        postTable.add( myScore );
+        postTable.add( myScoreEnd );
         //postTable.row();
         //postTable.add( myPoints );
         postTable.row();
-        postTable.add( myName );
+        postTable.add( myNameEnd );
 
         postTable.row();
         postTable.add().pad( 20 );
@@ -603,7 +594,7 @@ public class MultiplayerScreen extends DatabaseController {
             stage.act( delta );
         stage.draw();
 
-        if( started && !end )
+        if( !end )
             hud.act( delta );
         hud.draw();
 
@@ -618,10 +609,8 @@ public class MultiplayerScreen extends DatabaseController {
             if( TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) > TIMELIMIT ) {
                 // End Match
                 if( !end ) {
-                    //oppPoints.setText( oppPointsI + " POINTS" );
-                    oppName.setText( "@" + oppNameS );
-                    //myPoints.setText( myPointsI + " POINTS" );
-                    myName.setText( "@" + myNameS );
+                    oppNameEnd.setText( "@" + oppNameS );
+                    myNameEnd.setText( "@" + myNameS );
 
                     Account account = new Account();
                     account.ID = preferences.getInteger( "ID" );
@@ -634,8 +623,8 @@ public class MultiplayerScreen extends DatabaseController {
                 }
                 postStage.act();
                 postStage.draw();
-                oppScore.setText( oppPointsLabel.getText() );
-                myScore.setText( myPointsLabel.getText() );
+                oppScoreEnd.setText( oppPointsLabel.getText() );
+                myScoreEnd.setText( myPointsLabel.getText() );
             } else {
                 timerLabel.setText( String.format( "Time\n%d:%02d", ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) / 60, ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) % 60 ) );
             }

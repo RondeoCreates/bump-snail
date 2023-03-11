@@ -86,5 +86,7 @@ project(":core") {
         // api "com.github.tommyettinger:jbump:1.0.1"
         implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         implementation 'com.esotericsoftware:kryonet:2.22.0-RC1'
+
+        implementation "com.github.tommyettinger:textratypist:0.7.9"
     }
 }

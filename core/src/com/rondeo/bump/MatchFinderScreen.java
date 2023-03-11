@@ -3,6 +3,7 @@ package com.rondeo.bump;
 import java.io.IOException;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -100,12 +101,14 @@ public class MatchFinderScreen extends ScreenAdapter {
                         if( object instanceof FindMatch ) {
                             FindMatch findMatch = (FindMatch) object;
                             final int opponentId = findMatch.connectionId;
+
+                            final Preferences preferences = Gdx.app.getPreferences( "bump-snail-prefs" );
                             
                             Gdx.app.postRunnable( new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        game.setScreen( new MultiplayerScreen( game, client, opponentId ) );
+                                        game.setScreen( new MultiplayerScreen( game, client, opponentId, "null", preferences.getString( "username" ) ) );
                                     } catch( IOException e ) {
                                         e.printStackTrace();
                                     }
