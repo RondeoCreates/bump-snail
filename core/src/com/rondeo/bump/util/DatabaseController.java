@@ -52,9 +52,5 @@ public abstract class DatabaseController extends MusicController implements DBIn
     public void sendPosition( float x, float y, int index ) {};
 
     public void updateOpponentInfo( int points ) {};
-
-    //public void setOpponentInfo( String username, int points ){};
-
-    //public void setMyInfo( String username, int points ){};
     
 }

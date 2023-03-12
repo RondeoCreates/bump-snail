@@ -46,7 +46,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.esotericsoftware.kryonet.Client;
-import com.github.tommyettinger.textra.TextraLabel;
 import com.github.tommyettinger.textra.TypingConfig;
 import com.github.tommyettinger.textra.TypingLabel;
 import com.github.tommyettinger.textra.effects.HeartbeatEffect;
@@ -183,10 +182,10 @@ public class MultiplayerScreen extends DatabaseController {
     Texture cardTexture, manaTexture;
     TextButton manaLabelA;
     ProgressBar manaProgressA;
-    TypingLabel label;
+    TypingLabel label, myPointsLabel, oppPointsLabel;
     Label timerLabel;
     Timer timer;
-    Label myPointsLabel, oppPointsLabel, myNameLabel, oppNameLabel;
+    Label myNameLabel, oppNameLabel;
 
     @Override
     public void show() {
@@ -210,8 +209,8 @@ public class MultiplayerScreen extends DatabaseController {
         
         // Other UI
         table.row();
-        TypingConfig.registerEffect( "HEARTBEAT", "ENDHEARTBEAT", HeartbeatEffect.class );
-        label = new TypingLabel( "{HEARTBEAT=1.0;0.5}READY{ENDHEARTBEAT}", skin );
+        TypingConfig.registerEffect( "BEAT", "ENDBEAT", HeartbeatEffect.class );
+        label = new TypingLabel( "", skin );
         table.add();
         table.add( label ).expandY();
         table.add();
@@ -258,15 +257,15 @@ public class MultiplayerScreen extends DatabaseController {
                     STARTTIME --;
                     switch( STARTTIME ) {
                         case 3:
-                            label.setText( "{HEARTBEAT=1.0;0.5}READY{ENDHEARTBEAT}" );
+                            label.setText( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}READY{ENDBEAT}[%]" );
                             playCountdownA();
                             break;
                         case 2:
-                            label.setText( "{HEARTBEAT=1.0;0.5}SET{ENDHEARTBEAT}" );
+                            label.setText( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}SET{ENDBEAT}[%]" );
                             playCountdownA();
                             break;
                         case 1:
-                            label.setText( "{HEARTBEAT=1.0;0.5}BUMP{ENDHEARTBEAT}" );
+                            label.setText( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}BUMP{ENDBEAT}[%]" );
                             playCountdownB();
                             break;
                         default:
@@ -303,8 +302,8 @@ public class MultiplayerScreen extends DatabaseController {
         initForeground();
     }
 
-    public Label labelPoints( Label label ) {
-        label = new Label( "0" , skin );
+    public TypingLabel labelPoints( TypingLabel label ) {
+        label = new TypingLabel( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}" + 0 + " POINTS{ENDBEAT}[%]" , skin );
         label.setAlignment( Align.center );
         return label;
     }
@@ -316,10 +315,13 @@ public class MultiplayerScreen extends DatabaseController {
     }
 
     String myNameS = "", oppNameS = "";
+    Integer myPointsI = 0, oppPointsI = 0;
     
     @Override
     public void updateOpponentInfo( int points ) {
-        oppPointsLabel.setText( points + " POINTS" );
+        oppPointsI = points;
+        oppPointsLabel.setText( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}[FIREBRICK]" + points + " POINTS{CLEARCOLOR}{ENDBEAT}[%]");
+        //oppPointsLabel.setText( points + " POINTS" );
     }
 
     Cards cards;
@@ -542,6 +544,7 @@ public class MultiplayerScreen extends DatabaseController {
         oppNameEnd = new Label( "@default", skin.get( "small", LabelStyle.class ) );
 
         myScoreEnd = new Label( "0", skin.get( "big", LabelStyle.class ) );
+        matchInfoController.setLabel( myScoreEnd );
         //myPoints = new Label( "0", skin );
         myNameEnd = new Label( "@default", skin.get( "small", LabelStyle.class ) );
 
@@ -616,15 +619,14 @@ public class MultiplayerScreen extends DatabaseController {
                     account.ID = preferences.getInteger( "ID" );
                     account.points = preferences.getInteger( "points" ) + matchInfoController.points;
                     account.action = 2;
-                    System.out.println( account );
                     client.sendTCP( account );
                     
                     end = true;
                 }
                 postStage.act();
                 postStage.draw();
-                oppScoreEnd.setText( oppPointsLabel.getText() );
-                myScoreEnd.setText( myPointsLabel.getText() );
+                oppScoreEnd.setText( oppPointsI );
+                myScoreEnd.setText( myPointsI );
             } else {
                 timerLabel.setText( String.format( "Time\n%d:%02d", ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) / 60, ( TIMELIMIT - TimeUnit.MILLISECONDS.toSeconds( System.currentTimeMillis() ) ) % 60 ) );
             }

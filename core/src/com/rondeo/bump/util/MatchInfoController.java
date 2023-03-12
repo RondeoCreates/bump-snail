@@ -1,8 +1,8 @@
 package com.rondeo.bump.util;
 
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.esotericsoftware.kryonet.Client;
+import com.github.tommyettinger.textra.TypingLabel;
 
 public class MatchInfoController {
     public int ID;
@@ -11,15 +11,22 @@ public class MatchInfoController {
     public String username = "";
     private Client client;
     private int opponentId;
-    private Label myPointsLabel;
+
+    // Outside source
+    private TypingLabel myPointsLabel;
+    private Label myScoreEnd;
 
     public MatchInfoController( Client client, int opponentId ) {
         this.client = client;
         this.opponentId = opponentId;
     }
 
-    public void setLabel( Label myPointsLabel  ) {
+    public void setLabel( TypingLabel myPointsLabel ) {
         this.myPointsLabel = myPointsLabel;
+    }
+
+    public void setLabel( Label myScoreEnd ) {
+        this.myScoreEnd = myScoreEnd;
     }
 
     public void update( int additionalPoints ) {
@@ -33,8 +40,12 @@ public class MatchInfoController {
         client.sendTCP( matchInfo );
         if( myPointsLabel == null )
             return;
-        myPointsLabel.setText( points + " POINTS");
-        myPointsLabel.addAction( Actions.scaleBy( .5f, .5f, .3f ) );
+        myPointsLabel.setText( "[%?BLACK OUTLINE]{BEAT=1.0;0.5;1.0}" + points + " POINTS{ENDBEAT}[%]");
+
+        // ulusbonon ni
+        if( myScoreEnd == null )
+            return;
+        myScoreEnd.setText( points );
     }
 
 }
